@@ -3,7 +3,7 @@
 
 #include "../src/alloc.h"
 
-namespace alloc_test {
+namespace AllocTest {
 
 void test_all_case();
 

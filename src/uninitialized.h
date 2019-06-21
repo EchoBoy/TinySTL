@@ -2,21 +2,11 @@
 #define TINYSTL_SRC_UNINITIALIZED_H_
 
 #include "./type_traits.h"
+#include "./algorithm.h"
 #include "./construct.h"
 
 namespace TinySTL {
 /** ---------------------- uninitialized_copy ---------------------------- */
-template<typename InputIterator, typename ForwardIterator>
-inline ForwardIterator
-uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result) {
-  return __uninitialized_copy(first, last, result, value_type(result));
-}
-
-inline char *uninitialized_copy(char *first, char *last, char *result) {
-  memmove(result, first, last - first);
-  return result + (last - first);
-}
-
 template<typename InputIterator, typename ForwardIterator, typename T>
 inline ForwardIterator
 __uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result, T *) {
@@ -27,7 +17,6 @@ __uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator re
 template<typename InputIterator, typename ForwardIterator>
 inline ForwardIterator
 __uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, __true_type) {
-  // TODO: copy
   return copy(first, last, result);
 }
 template<typename InputIterator, typename ForwardIterator>
@@ -38,6 +27,12 @@ __uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterato
     construct(&*cur, *first);
   }
   return cur;
+}
+
+template<typename InputIterator, typename ForwardIterator>
+inline ForwardIterator
+uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result) {
+  return __uninitialized_copy(first, last, result, value_type(result));
 }
 
 /** ---------------------- uninitialized_fill ---------------------------- */
@@ -67,12 +62,6 @@ __uninitialized_fill_aux(ForwardIterator first, ForwardIterator last, const T &x
 }
 
 /** ---------------------- uninitialized_fill_n ---------------------------- */
-template<typename ForwardIterator, typename Size, typename T>
-inline ForwardIterator
-uninitialized_fill_n(ForwardIterator first, Size n, const T &x) {
-  return __uninitialized_fill_n(first, n, x, value_type(first));
-}
-
 template<typename ForwardIterator, typename Size, typename T, typename T1>
 inline ForwardIterator
 __uninitialized_fill_n(ForwardIterator first, Size n, const T &x, T1 *) {
@@ -83,7 +72,6 @@ __uninitialized_fill_n(ForwardIterator first, Size n, const T &x, T1 *) {
 template<typename ForwardIterator, typename Size, typename T>
 inline ForwardIterator
 __uninitialized_fill_n_aux(ForwardIterator first, Size n, const T &x, __true_type) {
-  //  TODO: fill_n
   return fill_n(first, n, x);
 }
 
@@ -94,6 +82,12 @@ __uninitialized_fill_n_aux(ForwardIterator first, Size n, const T &x, __false_ty
     construct(&*first, x);
   }
   return first;
+}
+
+template<typename ForwardIterator, typename Size, typename T>
+inline ForwardIterator
+uninitialized_fill_n(ForwardIterator first, Size n, const T &x) {
+  return __uninitialized_fill_n(first, n, x, value_type(first));
 }
 }
 

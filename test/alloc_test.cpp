@@ -1,6 +1,6 @@
 #include "./alloc_test.h"
 
-namespace alloc_test {
+namespace AllocTest {
 
 void test_case1() {
   for (int i = 1; i < 1024; ++i) {

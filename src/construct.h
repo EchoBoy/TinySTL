@@ -8,8 +8,7 @@
 #include <new>
 
 #include "./type_traits.h"
-#include "./iterator"
-#include "iterator.h"
+#include "./iterator.h"
 
 namespace TinySTL {
 
@@ -24,10 +23,6 @@ inline void destroy(T *ptr) {
   ptr->~T();
 }
 
-template<typename ForwardIterator>
-inline void destroy(ForwardIterator first, ForwardIterator last) {
-  __destroy(first, last, value_type(first));
-}
 template<typename ForwardIterator, typename T>
 inline void __destroy(ForwardIterator first, ForwardIterator last, T *) {
   typedef typename __type_traits<T>::has_trivial_destructor has_trivial_destructor;
@@ -42,6 +37,11 @@ inline void __destroy_aux(ForwardIterator first, ForwardIterator last, __false_t
   for (; first < last; ++first) {
     destroy(&*first);
   }
+}
+
+template<typename ForwardIterator>
+inline void destroy(ForwardIterator first, ForwardIterator last) {
+  __destroy(first, last, value_type(first));
 }
 
 }

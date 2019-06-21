@@ -2,6 +2,7 @@
 #define TINYSTL_SRC_ITERATOR_H_
 
 #include <stddef.h>
+
 namespace TinySTL {
 
 struct input_iterator_tag {};
@@ -66,6 +67,56 @@ template<typename Iterator>
 inline typename iterator_traits<Iterator>::value_type *
 value_type(const Iterator &) {
   return static_cast<typename iterator_traits<Iterator>::value_type *>(0);
+}
+
+/***************** [distance] T(n) = O(n) *********************/
+template<typename InputIterator>
+typename iterator_traits<InputIterator>::difference_type
+__distance(InputIterator first, InputIterator last, input_iterator_tag) {
+  typename iterator_traits<InputIterator>::difference_type dist = 0;
+  for (; first != last; ++first, ++dist);
+  return dist;
+}
+
+template<typename RandomIterator>
+typename iterator_traits<RandomIterator>::difference_type
+__distance(RandomIterator first, RandomIterator last, random_iterator_tag) {
+  return last - first;
+}
+
+template<typename InputIterator>
+typename iterator_traits<InputIterator>::difference_type
+distance(InputIterator first, InputIterator last) {
+  typedef typename iterator_traits<InputIterator>::iterator_category i_c;
+  return __distance(first, last, i_c());
+}
+
+/***************** [advance] T(n) = O(n) *********************/
+template<typename InputIterator, typename Distance>
+void __advance(InputIterator &it, Distance n, input_iterator_tag) {
+  assert(n >= 0);
+  for (; n != 0; --n, ++it);
+}
+template<typename BidirectionalIterator, typename Distance>
+void __advance(BidirectionalIterator &it, Distance n, bidirectional_iterator_tag) {
+  if (n < 0) {
+    for (; n != 0; ++n, --it);
+  } else {
+    for (; n != 0; --n, ++it);
+  }
+}
+template<typename RandomIterator, typename Distance>
+void __advance(RandomIterator &it, Distance n, random_iterator_tag) {
+  if (n < 0) {
+    it -= (-n);
+  } else {
+    it += n;
+  }
+}
+template<typename InputIterator, typename Distance>
+void advance(InputIterator &it, Distance n) {
+  typedef typename iterator_traits<InputIterator>::iterator_category i_c;
+  __advance(it, n, i_c());
 }
 
 }
