@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include <iostream>
 #include "../src/vector.h"
 #include "test_utils.h"
 

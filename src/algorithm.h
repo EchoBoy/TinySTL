@@ -5,7 +5,17 @@
 #include "./type_traits.h"
 
 namespace TinySTL {
-/***************** [max] T(n) = O(n) *********************/
+
+/***************** [swap] T(n) = O(1) *********************/
+template<typename T>
+inline void
+swap(T &a, T &b) {
+  T tmp = a;
+  a = b;
+  b = tmp;
+}
+
+/***************** [max] T(n) = O(1) *********************/
 template<typename T>
 inline const T &
 max(const T &a, const T &b) {
@@ -21,7 +31,6 @@ max(const T &a, const T &b, Compare comp) {
 template<typename ForwardIterator, typename T>
 inline void
 fill(ForwardIterator first, ForwardIterator last, const T &val) {
-//  TODO: = 与拷贝构造函数用法区别
   for (; first != last; ++first)
     *first = val;
 }

@@ -39,14 +39,24 @@ class vector {
   }
   explicit vector(size_type n) { allocate_and_fill_n(n, value_type()); }
   vector(size_type n, const value_type &value) { allocate_and_fill_n(n, value); }
+
+  vector(const vector &v) { allocate_and_copy(v.begin(), v.end()); }
+  vector &operator=(const vector &v) {
+    if (this != &v) {
+      destroy_and_deallocate_all();
+      allocate_and_copy(v.begin(), v.end());
+    }
+    return *this;
+  }
+
   ~vector() { destroy_and_deallocate_all(); }
 
   /*************** 比较相关 ************/
   bool operator==(const vector &v) const {
     if (size() != v.size())
       return false;
-    auto it1 = start, last1 = finish;
-    auto it2 = v.start, last2 = v.finish;
+    auto it1 = begin(), last1 = end();
+    auto it2 = v.begin(), last2 = v.end();
     for (; it1 != last1 && it2 != last2; ++it1, ++it2) {
       if (*it1 != *it2)
         return false;
@@ -58,11 +68,15 @@ class vector {
   }
 
   /*************** 迭代器相关 ************/
-  iterator begin() const { return start; }
-  iterator end() const { return finish; }
+  iterator begin() { return start; }
+  const_iterator begin() const { return start; }
+  const_iterator cbegin() const { return start; }
+  iterator end() { return finish; }
+  const_iterator end() const { return finish; }
+  const_iterator cend() const { return finish; }
 
   /*************** 容量相关 ************/
-  size_type size() const { return size_type(end() - begin()); }
+  size_type size() const { return size_type(finish - start); }
   size_type capacity() const { return size_type(end_of_storage - start); }
   bool empty() const { return begin() == end(); }
   void resize(size_type new_size, const value_type &x) {
@@ -73,22 +87,54 @@ class vector {
     }
   }
   void resize(size_type new_size) { resize(new_size, T()); }
+  void reserve(size_type n) {
+    if (n <= capacity()) return;
+    iterator new_start = data_allocator::allocate(n);
+    iterator new_finish = TinySTL::uninitialized_copy(begin(), end(), new_start);
+    destroy_and_deallocate_all();
+    start = new_start;
+    finish = new_finish;
+    end_of_storage = new_start + n;
+  }
 
   /*************** 访问元素相关 ************/
-  reference operator[](size_type i) { return *(begin() + i); }
+  reference operator[](const size_type i) { return *(begin() + i); }
+  const_iterator operator[](const size_type i) const { return *(cbegin() + i); }
   reference front() { return *(begin()); }
   reference back() { return *(end() - 1); }
+  pointer data() { return start; }
 
   /*************** 相关容器相关 ************/
   void insert(iterator position, const value_type &val) { insert(position, 1, val); }
   void insert(iterator position, size_type n, const value_type &val);
-//  void clear();
-//  void swap(vector &v);
+  template<typename InputIterator>
+  void clear() {
+    destroy(start, finish);
+    finish = start;
+  }
+  void swap(vector &v) {
+    if (this != &v) {
+      TinySTL::swap(start, v.start);
+      TinySTL::swap(finish, v.finish);
+      TinySTL::swap(end_of_storage, v.end_of_storage);
+    }
+  }
   void push_back(const value_type &val) { insert(end(), val); }
-//  void pop_back();
-//  iterator erase(iterator position);
+  void pop_back() {
+    --finish;
+    destroy(finish);
+  }
+  iterator erase(iterator first, iterator last) {
+    iterator new_it = first, old_it = last;
+    for (; old_it != finish; ++old_it, ++new_it)
+      *new_it = *old_it;
+    finish -= last - first;
+    return first;
+  }
+  iterator erase(iterator position) { return erase(position, position + 1); }
 
-  // 辅助函数
+
+  /*************** 辅助函数 ************/
  protected:
   void destroy_and_deallocate_all() {
     if (capacity() != 0) {
@@ -101,9 +147,9 @@ class vector {
 
     iterator new_start = data_allocator::allocate(new_cap);
     iterator new_end_of_storage = new_start + new_cap;
-    iterator new_finish = uninitialized_copy(begin(), fill_position, new_start);
-    new_finish = uninitialized_fill_n(new_finish, n, val);
-    new_finish = uninitialized_copy(fill_position, end(), new_finish);
+    iterator new_finish = TinySTL::uninitialized_copy(begin(), fill_position, new_start);
+    new_finish = TinySTL::uninitialized_fill_n(new_finish, n, val);
+    new_finish = TinySTL::uninitialized_copy(fill_position, end(), new_finish);
 
     destroy_and_deallocate_all();
 
@@ -136,8 +182,8 @@ void vector<T, Alloc>::insert(iterator position, size_type n, const value_type &
   if (size_type(end_of_storage - finish) >= n) {
     // 剩下空间够用
     auto new_finish = finish + n;
-    copy_backward(position, finish, new_finish);
-    uninitialized_fill_n(position, n, val);
+    TinySTL::copy_backward(position, finish, new_finish);
+    TinySTL::uninitialized_fill_n(position, n, val);
     finish = new_finish;
   } else {
     // 空间不够用，重新分配

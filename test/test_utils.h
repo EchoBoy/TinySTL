@@ -5,7 +5,7 @@ namespace TinySTL {
 namespace Test {
 
 template<typename Container1, typename Container2>
-bool container_equal(Container1 &con1, Container2 &con2) {
+bool container_equal(const Container1 &con1, const Container2 &con2) {
   auto first1 = con1.begin(), last1 = con1.end();
   auto first2 = con2.begin(), last2 = con2.end();
   for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
