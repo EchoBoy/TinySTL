@@ -1,3 +1,4 @@
+#include <new>
 #include "../alloc.h"
 
 namespace TinySTL {
@@ -5,14 +6,10 @@ namespace TinySTL {
 char *alloc::start_free = nullptr;
 char *alloc::end_free = nullptr;
 size_t alloc::heap_size = 0;
-//TODO: 更佳优雅的初始化
-alloc::node *alloc::free_list[alloc::ENFreeLists::NFREELISTS] = {
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-    nullptr, nullptr, nullptr
-};
+alloc::node *alloc::free_list[alloc::NFREELISTS] = { nullptr };
 
 void *alloc::allocate(size_t bytes) {
-  if (bytes > EMaxBytes::MAXBYTES) {
+  if (bytes > MAXBYTES) {
     return malloc(bytes);
   }
   int index = size2index(bytes);
@@ -26,7 +23,7 @@ void *alloc::allocate(size_t bytes) {
 }
 
 void alloc::deallocate(void *ptr, size_t bytes) {
-  if (bytes > EMaxBytes::MAXBYTES) {
+  if (bytes > MAXBYTES) {
     free(ptr);
     return;
   }
@@ -85,7 +82,7 @@ char *alloc::chunk_alloc(size_t size, int *nobjs) {
   size_t bytes_to_get = 2 * total_bytes + round_up(heap_size >> 4);
   // 回收剩下的内存
   if (byte_left > 0) {
-    // TODO: 应该将 byte_left 放入 free_list[index-1]中？
+    // ok_TODO: 应该将 byte_left 放入 free_list[index-1]中？ans：这里 byte_left 肯定是 8 的倍数
     int index = size2index(byte_left);
     ((node *) start_free)->next = free_list[index];
     free_list[index] = (node *) start_free;
@@ -93,7 +90,7 @@ char *alloc::chunk_alloc(size_t size, int *nobjs) {
   start_free = (char *) malloc(bytes_to_get);
   if (nullptr == start_free) {
     // malloc 空间分配失败
-    for (int i = size2index(size) + 1; i < ENFreeLists::NFREELISTS; i++) {
+    for (int i = size2index(size) + 1; i < NFREELISTS; i++) {
       if (nullptr != free_list[i]) {
         start_free = (char *) free_list[i];
         end_free = start_free + index2size(i);
@@ -102,8 +99,8 @@ char *alloc::chunk_alloc(size_t size, int *nobjs) {
         return chunk_alloc(size, nobjs);
       }
     }
-    // TODO: 如何正确的抛出异常
-    throw "out of memory!";
+    // ok_TODO: 如何正确的抛出异常。ans：throw 就像函数返回值一样，没有规定类型，但一般使用有意义的exception（std::exception的子类）
+    throw std::bad_alloc();
   }
   heap_size += bytes_to_get;
   end_free = start_free + bytes_to_get;

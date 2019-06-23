@@ -19,7 +19,7 @@ inline void construct(T1 *ptr, const T2 &value) {
 
 template<typename T>
 inline void destroy(T *ptr) {
-//TODO: 基础类型（如int），有析构函数？
+//ok_TODO: 基础类型（如int），有析构函数？有没有都无所谓，有的话会更统一。
   ptr->~T();
 }
 

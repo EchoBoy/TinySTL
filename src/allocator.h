@@ -12,7 +12,7 @@ namespace TinySTL {
 template<typename T>
 class allocator {
  public:
-  // TODO: static_case 和 普通类型转换有什么区别？
+  // ok_TODO: static_case 和 普通类型转换有什么区别？ ans：char * to int *，普通转换能编译，static_case转换不能编译。
   static T *allocate() { return static_cast<T *>(alloc::allocate(sizeof(T))); }
   static T *allocate(size_t n) {
     if (n == 0)
