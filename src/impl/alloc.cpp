@@ -9,6 +9,8 @@ size_t alloc::heap_size = 0;
 alloc::node *alloc::free_list[alloc::NFREELISTS] = { nullptr };
 
 void *alloc::allocate(size_t bytes) {
+  if (bytes == 0)
+    return nullptr;
   if (bytes > MAXBYTES) {
     return malloc(bytes);
   }
@@ -23,6 +25,8 @@ void *alloc::allocate(size_t bytes) {
 }
 
 void alloc::deallocate(void *ptr, size_t bytes) {
+  if (bytes == 0)
+    return;
   if (bytes > MAXBYTES) {
     free(ptr);
     return;

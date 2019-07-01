@@ -1,68 +1,67 @@
-#include "./vector_test.h"
+#include <vector>
+#include <string>
+#include <array>
+#include <gtest/gtest.h>
+#include "../src/vector.h"
+#include "test_utils.h"
 
-namespace VectorTest {
+using TinySTL::Test::container_equal;
 
-void testCase1() {
+template<typename T>
+using stdVec = std::vector<T>;
+
+template<typename T>
+using tsVec = TinySTL::vector<T>;
+
+TEST(VectorTest, Constructor) {
   stdVec<std::string> v1(10, "ligand");
   tsVec<std::string> v2(10, "ligand");
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(container_equal(v1, v2));
 
   stdVec<std::string> v3(10);
   tsVec<std::string> v4(10);
-  assert(TinySTL::Test::container_equal(v3, v4));
+  EXPECT_TRUE(container_equal(v3, v4));
 
   std::array<std::string, 3> arr = {"abc", "def", "ghi"};
   stdVec<std::string> v5(std::begin(arr), std::end(arr));
   tsVec<std::string> v6(std::begin(arr), std::end(arr));
-  assert(TinySTL::Test::container_equal(v5, v6));
-
-  const stdVec<std::string> v7(100, "li");
-  const tsVec<std::string> v8(100, "li");
+  EXPECT_TRUE(container_equal(v5, v6));
 }
 
-void testCase2() {
+TEST(VectorTest, CCtorAndAssgin) {
   stdVec<int> temp1(10, 0);
   tsVec<int> temp2(10, 0);
 
   auto v1(temp1);
   auto v2(temp2);
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(container_equal(v1, v2));
 
-  auto v3(std::move(temp1));
-  auto v4(std::move(temp2));
-  assert(TinySTL::Test::container_equal(v3, v4));
-
-  auto v5 = v1;
-  auto v6 = v2;
-  assert(TinySTL::Test::container_equal(v5, v6));
-
-  auto v7 = std::move(v3);
-  auto v8 = std::move(v4);
-  assert(TinySTL::Test::container_equal(v7, v8));
+  auto v5 = temp1;
+  auto v6 = temp2;
+  EXPECT_TRUE(container_equal(v5, v6));
 }
-void testCase3() {
+
+TEST(VectorTest, PushBack) {
   tsVec<int> v1, v2;
   for (int i = 0; i != 100; ++i) {
     v1.push_back(i);
     v2.push_back(i);
   }
-
-  assert(v1 == v2);
-  assert(!(v1 != v2));
+  EXPECT_TRUE(v1 == v2);
+  EXPECT_FALSE(v1 != v2);
 }
-void testCase4() {
+
+TEST(VectorTest, Iterator) {
   tsVec<int> my_vector;
   for (int i = 1; i <= 5; i++)
     my_vector.push_back(i);
-
   auto i = 1;
-  for (tsVec<int>::iterator it = my_vector.begin(); it != my_vector.end(); ++it, ++i) {
-    assert(*it == i);
+  for (auto it = my_vector.begin(); it != my_vector.end(); ++it, ++i) {
+    EXPECT_EQ(*it, i);
   }
-
   i = 1;
-  for (tsVec<int>::const_iterator it = my_vector.cbegin(); it != my_vector.cend(); ++it, ++i) {
-    assert(*it == i);
+  for (auto it = my_vector.cbegin(); it != my_vector.cend(); ++it, ++i) {
+    EXPECT_EQ(*it, i);
   }
 }
 
@@ -83,101 +82,96 @@ void testCase4() {
 //    assert(*it == i);
 //  }
 //}
-void testCase6() {
+
+TEST(VectorTest, Size) {
   tsVec<int> v(11, 0);
-  assert(v.size() == 11);
-
+  EXPECT_EQ(v.size(), 11);
   v.resize(5);
-  assert(v.size() == 5);
-
+  EXPECT_EQ(v.size(), 5);
   v.resize(20);
-  assert(v.size() == 20);
-}
-void testCase7() {
-  tsVec<int> v;
+  EXPECT_EQ(v.size(), 20);
+
+  tsVec<int> v1;
   v.reserve(20);
-  assert(v.capacity() == 20);
+  EXPECT_GE(v.capacity(), 20);
 }
-void testCase8() {
+
+TEST(VectorTest, SetValue) {
   stdVec<int> v1(10);
   tsVec<int> v2(10);
   for (unsigned i = 0; i < 10; i++) {
     v1[i] = i;
     v2[i] = i;
   }
-  assert(TinySTL::Test::container_equal(v1, v2));
-
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
   v1.front() = 99;
   v2.front() = 99;
   v1.back() = 100;
   v2.back() = 100;
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 
-  assert(TinySTL::Test::container_equal(v1, v2));
-}
-void testCase9() {
-  stdVec<int> v1(5);
-  tsVec<int> v2(5);
+  stdVec<int> v3(5);
+  tsVec<int> v4(5);
 
-  auto p1 = v1.data();
-  auto p2 = v2.data();
+  auto p1 = v3.data();
+  auto p2 = v4.data();
   *p1 = 10;
   ++p1;
   *p1 = 20;
   p1[2] = 100;
+
   *p2 = 10;
   ++p2;
   *p2 = 20;
   p2[2] = 100;
-
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(TinySTL::Test::container_equal(v3, v4));
 }
-void testCase10() {
+
+TEST(VectorTest, Swap) {
   tsVec<int> foo(3, 100);   // three ints with a value of 100
   tsVec<int> bar(2, 200);   // five ints with a value of 200
-
-  assert(TinySTL::Test::container_equal(foo, stdVec<int>{100, 100, 100}));
-  assert(TinySTL::Test::container_equal(bar, stdVec<int>{200, 200}));
+  EXPECT_TRUE(TinySTL::Test::container_equal(foo, stdVec<int>{100, 100, 100}));
+  EXPECT_TRUE(TinySTL::Test::container_equal(bar, stdVec<int>{200, 200}));
 
   foo.swap(bar);
-  assert(TinySTL::Test::container_equal(bar, stdVec<int>{100, 100, 100}));
-  assert(TinySTL::Test::container_equal(foo, stdVec<int>{200, 200}));
+  EXPECT_TRUE(TinySTL::Test::container_equal(bar, stdVec<int>{100, 100, 100}));
+  EXPECT_TRUE(TinySTL::Test::container_equal(foo, stdVec<int>{200, 200}));
 }
-void testCase11() {
+TEST(VectorTest, String) {
   stdVec<std::string> v1;
   tsVec<std::string> v2;
-
   v1.push_back("hello ");
   v1.push_back("world");
   v2.push_back("hello ");
   v2.push_back("world");
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 
   v1.pop_back();
   v2.pop_back();
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 }
-void testCase12() {
+
+TEST(VectorTest, Insert) {
   stdVec<int> v1;
   tsVec<int> v2;
 
   v1.insert(v1.begin(), 0);
   v2.insert(v2.begin(), 0);
-  assert(TinySTL::Test::container_equal(v1, v2));
-
   v1.insert(v1.end(), 1);
   v2.insert(v2.end(), 1);
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 
   v1.insert(v1.begin() + v1.size() / 2, 10, 0);
   v2.insert(v2.begin() + v2.size() / 2, 10, 0);
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 
 //  int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 //  v1.insert(v1.end(), std::begin(arr), std::end(arr));
 //  v2.insert(v2.end(), std::begin(arr), std::end(arr));
 //  assert(TinySTL::Test::container_equal(v1, v2));
 }
-void testCase13() {
+
+TEST(VectorTest, Erase) {
   stdVec<int> v1;
   tsVec<int> v2;
   for (int i = 1; i <= 10; i++) {
@@ -186,18 +180,11 @@ void testCase13() {
   }
   v1.erase(v1.begin() + 5);
   v2.erase(v2.begin() + 5);
-  assert(TinySTL::Test::container_equal(v1, v2));
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 
   v1.erase(v1.begin(), v1.begin() + 3);
   v2.erase(v2.begin(), v2.begin() + 3);
-  assert(TinySTL::Test::container_equal(v1, v2));
-}
-void testCase14() {
-  tsVec<int> foo(3, 100);
-  tsVec<int> bar(2, 200);
-
-  assert(!(foo == bar));
-  assert(foo != bar);
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 }
 
 class TestItem {
@@ -234,26 +221,3 @@ int TestItem::count = 0;
 //  assert(TestItem::getCount() == 0);
 //
 //}
-
-void my_test_case() {
-  tsVec<std::string> v;
-  for (int i = 0; i < 1000000; ++i)
-    v = tsVec<std::string>(1000000, "hello, world!. I'm writing my own STL, That's cray");
-}
-
-void test_all_case() {
-  testCase1();
-  testCase2();
-  testCase3();
-  testCase4();
-  testCase6();
-  testCase7();
-  testCase8();
-  testCase9();
-  testCase10();
-  testCase11();
-  testCase12();
-  testCase13();
-  testCase14();
-}
-}

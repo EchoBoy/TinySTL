@@ -1,32 +1,21 @@
-#include "./alloc_test.h"
+#include "../src/alloc.h"
+#include <gtest/gtest.h>
 
-namespace AllocTest {
-
-void test_case1() {
+TEST(Alloc, Simple) {
   for (int i = 1; i < 1024; ++i) {
-    auto a = (char *) TinySTL::alloc::allocate(i);
+    auto a = static_cast<char *>(TinySTL::alloc::allocate(i));
     for (int j = 0; j < i; ++j) {
       *(a + j) = 'l';
     }
     TinySTL::alloc::deallocate(a, i);
   }
+  EXPECT_TRUE(true);
 }
 
-void test_case2() {
+TEST(Alloc, Zero) {
   auto ptr = TinySTL::alloc::allocate(0);
+  EXPECT_EQ(ptr, nullptr);
   TinySTL::alloc::deallocate(ptr, 0);
+  EXPECT_TRUE(true);
 }
 
-void test_case3() {
-  for (int i = 0; i < 1000; ++i) {
-    TinySTL::alloc::allocate(i);
-  }
-}
-
-void test_all_case() {
-  test_case1();
-  test_case2();
-  test_case3();
-}
-
-}
