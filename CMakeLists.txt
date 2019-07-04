@@ -35,6 +35,9 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
   include_directories("${gtest_SOURCE_DIR}/include")
 endif()
 
+
+
+
 # 自定义编译 生成测试
 # 所有的src中的cpp 都在 impl 下
 aux_source_directory(./src/impl DIR_SRC_SRCS)
@@ -44,6 +47,10 @@ aux_source_directory(./test DIR_TEST_SRCS)
 add_executable(TinySTLTest ${DIR_TEST_SRCS} ${DIR_SRC_SRCS})
 
 target_link_libraries(TinySTLTest gtest_main)
+
+
+
+
 
 # 自定义编译 生成实验(一些C++知识的整理）
 aux_source_directory(./experiment DIR_EXP_SRCS)

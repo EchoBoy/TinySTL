@@ -1,5 +1,5 @@
-#ifndef TINYSTL_SRC_ALLOC_H_
-#define TINYSTL_SRC_ALLOC_H_
+#ifndef TINYSTL_SRC___ALLOC_H_
+#define TINYSTL_SRC___ALLOC_H_
 
 /**
  * 空间配置器下属内存管理，提供内存分配和回收工具：allocate 和 deallocate。与标准STL不同，这里没有考虑多线程的情况。
@@ -8,7 +8,7 @@
 #include <cstdlib>
 
 namespace TinySTL {
-class alloc {
+class __alloc {
  private:
   static const int ALIGN = 8; // 小型区块的上调边界
   static const int MAXBYTES = 128; // 小型区块的上界
@@ -49,4 +49,4 @@ class alloc {
 };
 }
 
-#endif //TINYSTL_SRC_ALLOC_H_
+#endif //TINYSTL_SRC___ALLOC_H_

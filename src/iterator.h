@@ -71,7 +71,7 @@ value_type(const Iterator &) {
 
 /***************** [distance] T(n) = O(n) *********************/
 template<typename InputIterator>
-typename iterator_traits<InputIterator>::difference_type
+inline typename iterator_traits<InputIterator>::difference_type
 __distance(InputIterator first, InputIterator last, input_iterator_tag) {
   typename iterator_traits<InputIterator>::difference_type dist = 0;
   for (; first != last; ++first, ++dist);
@@ -79,13 +79,13 @@ __distance(InputIterator first, InputIterator last, input_iterator_tag) {
 }
 
 template<typename RandomIterator>
-typename iterator_traits<RandomIterator>::difference_type
+inline typename iterator_traits<RandomIterator>::difference_type
 __distance(RandomIterator first, RandomIterator last, random_iterator_tag) {
   return last - first;
 }
 
 template<typename InputIterator>
-typename iterator_traits<InputIterator>::difference_type
+inline typename iterator_traits<InputIterator>::difference_type
 distance(InputIterator first, InputIterator last) {
   typedef typename iterator_traits<InputIterator>::iterator_category i_c;
   return __distance(first, last, i_c());
@@ -93,12 +93,14 @@ distance(InputIterator first, InputIterator last) {
 
 /***************** [advance] T(n) = O(n) *********************/
 template<typename InputIterator, typename Distance>
-void __advance(InputIterator &it, Distance n, input_iterator_tag) {
+void
+__advance(InputIterator &it, Distance n, input_iterator_tag) {
   assert(n >= 0);
   for (; n != 0; --n, ++it);
 }
 template<typename BidirectionalIterator, typename Distance>
-void __advance(BidirectionalIterator &it, Distance n, bidirectional_iterator_tag) {
+void
+__advance(BidirectionalIterator &it, Distance n, bidirectional_iterator_tag) {
   if (n < 0) {
     for (; n != 0; ++n, --it);
   } else {
@@ -106,7 +108,8 @@ void __advance(BidirectionalIterator &it, Distance n, bidirectional_iterator_tag
   }
 }
 template<typename RandomIterator, typename Distance>
-void __advance(RandomIterator &it, Distance n, random_iterator_tag) {
+inline void
+__advance(RandomIterator &it, Distance n, random_iterator_tag) {
   if (n < 0) {
     it -= (-n);
   } else {
@@ -114,7 +117,8 @@ void __advance(RandomIterator &it, Distance n, random_iterator_tag) {
   }
 }
 template<typename InputIterator, typename Distance>
-void advance(InputIterator &it, Distance n) {
+inline void
+advance(InputIterator &it, Distance n) {
   typedef typename iterator_traits<InputIterator>::iterator_category i_c;
   __advance(it, n, i_c());
 }

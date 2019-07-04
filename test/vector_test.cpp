@@ -165,10 +165,10 @@ TEST(VectorTest, Insert) {
   v2.insert(v2.begin() + v2.size() / 2, 10, 0);
   EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 
-//  int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-//  v1.insert(v1.end(), std::begin(arr), std::end(arr));
-//  v2.insert(v2.end(), std::begin(arr), std::end(arr));
-//  assert(TinySTL::Test::container_equal(v1, v2));
+  int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  v1.insert(v1.end(), std::begin(arr), std::end(arr));
+  v2.insert(v2.end(), std::begin(arr), std::end(arr));
+  EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 }
 
 TEST(VectorTest, Erase) {
@@ -187,37 +187,33 @@ TEST(VectorTest, Erase) {
   EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 }
 
-class TestItem {
- public:
-  TestItem() {
-    ++count;
-  }
-  TestItem(const TestItem &other) {
-    ++count;
-  }
 
-  virtual ~TestItem() {
-    --count;
-  }
+// 以上测试都是常规操作，这个考察构造，复制构造，析构和assignment operate。
+TEST(VectorTest, CtorAndDctor) {
+  // TODO: 1. 解决死循环 2. 理清 vector 内的对象什么周期，以及各种底层copy、fill 是否合理
+  typedef TinySTL::Test::CountLife TestItem;
+  auto obj = TestItem();
 
-  static int getCount() {
-    return count;
-  }
- private:
-  static int count;
-};
-int TestItem::count = 0;
+//  TestItem::set_zero_all();
+//  tsVec<TestItem> t;
+//  t.push_back(TestItem());
+//  t.push_back(TestItem());
+//  t.push_back(TestItem());
+//  t.insert(t.begin(), TestItem());
+//  auto t_res = TestItem::to_string();
 
-//void testCase15() {
-//  assert(TestItem::getCount() == 0);
-//  {
-//    typedef TinySTL::vector<TestItem> TVector;
-//    TVector t(10);
-//    t.push_back(TestItem());
-//    t.push_back(TestItem());
-//    t.push_back(TestItem());
-//    t.insert(t.begin(), t.begin(), t.begin() + 1);
-//  }
-//  assert(TestItem::getCount() == 0);
-//
-//}
+  TestItem::set_zero_all();
+
+  stdVec<TestItem> t1;
+  t1.push_back(obj);
+  t1.push_back(obj);
+  t1.push_back(obj);
+  t1.insert(t1.begin(), obj);
+  auto t1_res = TestItem::to_string();
+  cout << t1_res;
+
+//  EXPECT_EQ(t_res, t1_res);
+
+//  t.insert(t.begin(), t.begin(), t.begin() + 1);
+
+}

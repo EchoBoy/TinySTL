@@ -38,10 +38,6 @@ inline void
 fill(char *first, char *last, const char &val) {
   memset(first, static_cast<unsigned char>(val), last - first);
 }
-inline void
-fill(wchar_t *first, wchar_t *last, const wchar_t &val) {
-  memset(first, static_cast<unsigned char>(val), (last - first) * sizeof(wchar_t));
-}
 
 /***************** [fill-n] T(n) = O(n) *********************/
 template<typename OutputIterator, typename Size, typename T>
@@ -53,80 +49,79 @@ fill_n(OutputIterator first, Size n, const T &val) {
 }
 template<typename Size>
 inline char *
-fill_n(char *first, char *last, Size n, const char &val) {
+fill_n(char *first, Size n, const char &val) {
   memset(first, static_cast<unsigned char>(val), n);
   return first + n;
 }
 
-template<typename Size>
-inline wchar_t *
-fill_n(wchar_t *first, Size n, const wchar_t &val) {
-  memset(first, static_cast<unsigned char>(val), n * sizeof(wchar_t));
-  return first + n;
-}
-
 /***************** [copy-backward] T(n) = O(n) *********************/
-
-template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-inline BidirectionalIterator2
-__copy_backward_aux(BidirectionalIterator1 first,
-                    BidirectionalIterator1 last,
-                    BidirectionalIterator2 result,
-                    __true_type) {
-  auto dist = distance(first, last);
-  memmove(result, first, sizeof(*first) * dist);
-  advance(result, -dist);
-  return result;
-}
-
-template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-inline BidirectionalIterator2
-__copy_backward_aux(BidirectionalIterator1 first,
-                    BidirectionalIterator1 last,
-                    BidirectionalIterator2 result,
-                    __false_type) {
+// 出口一：assignment operator: 其他
+template<typename InputIterator, typename BidirectionalIterator>
+inline BidirectionalIterator
+__copy_backward(InputIterator first, InputIterator last, BidirectionalIterator result) {
   --last;
   --result;
-  for (; last != first; --last, --result)
+  for (auto n = TinySTL::distance(first, last); n > 0; --n, --result, --last)
     *result = *last;
-  *result = *last;
   return result;
 }
-
-template<typename BidirectionalIterator1, typename BidirectionalIterator2, typename T>
-inline BidirectionalIterator2
-__copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result, T *) {
-  typedef typename __type_traits<T>::is_POD_type is_pod;
-  return __copy_backward_aux(first, last, result, is_pod());
+// 出口二：memmove，条件：原生指针 + has_trivial_assignment_operator
+template<typename T>
+inline T *
+__copy_t_backward(const T *first, const T *last, T *result, __true_type) {
+  auto dist = last - first;
+  memmove(result - dist, first, sizeof(T) * dist);
+  return result - dist;
 }
-template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-inline BidirectionalIterator2
-copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
-  return __copy_backward(first, last, result, value_type(first));
-}
-
-/***************** [copy] T(n) = O(n) *********************/
-template<typename RandomIterator, typename OutputIterator, typename Distance>
-inline OutputIterator
-__copy_d(RandomIterator first, RandomIterator last, OutputIterator result, Distance *) {
-  for (Distance n = last - first; n > 0; --n, ++result, ++first)
-    *result = *first;
-  return result;
+template<typename T>
+inline T *
+__copy_t_backward(const T *first, const T *last, T *result, __false_type) {
+  return TinySTL::__copy_backward(first, last, result);
 }
 
 template<typename InputIterator, typename OutputIterator>
+struct __copy_dispatch_backward {
+  OutputIterator operator()(InputIterator first, InputIterator last, OutputIterator result) {
+    return __copy_backward(first, last, result);
+  }
+};
+template<typename T>
+struct __copy_dispatch_backward<T *, T *> {
+  T *operator()(T *first, T *last, T *result) {
+    typedef typename __type_traits<T>::has_trivial_assignment_operator t;
+    return __copy_t_backward(first, last, result, t());
+  }
+};
+template<typename T>
+struct __copy_dispatch_backward<const T *, T *> {
+  T *operator()(const T *first, const T *last, T *result) {
+    typedef typename __type_traits<T>::has_trivial_assignment_operator t;
+    return __copy_t_backward(first, last, result, t());
+  }
+};
+
+template<typename InputIterator, typename OutputIterator>
 inline OutputIterator
-__copy(InputIterator first, InputIterator last, OutputIterator result, input_iterator_tag) {
-  for (; first != last; ++result, ++first)
+copy_backward(InputIterator first, InputIterator last, OutputIterator result) {
+  return __copy_dispatch_backward<InputIterator, OutputIterator>()(first, last, result);
+}
+inline char *
+copy_backward(const char *first, const char *last, char *result) {
+  auto dist = last - first;
+  memmove(result - dist, first, dist);
+  return result - dist;
+}
+
+/***************** [copy] T(n) = O(n) *********************/
+// 出口一：assignment operator: 其他
+template<typename InputIterator, typename OutputIterator>
+inline OutputIterator
+__copy(InputIterator first, InputIterator last, OutputIterator result) {
+  for (auto n = distance(first, last); n > 0; --n, ++result, ++first)
     *result = *first;
   return result;
 }
-template<typename RandomIterator, typename OutputIterator>
-inline OutputIterator
-__copy(RandomIterator first, RandomIterator last, OutputIterator result, random_iterator_tag) {
-  return __copy_d(first, last, result, distance_type(first));
-}
-
+// 出口二：memmove，条件：原生指针 + has_trivial_assignment_operator
 template<typename T>
 inline T *
 __copy_t(const T *first, const T *last, T *result, __true_type) {
@@ -136,13 +131,13 @@ __copy_t(const T *first, const T *last, T *result, __true_type) {
 template<typename T>
 inline T *
 __copy_t(const T *first, const T *last, T *result, __false_type) {
-  return __copy_d(first, last, result, (ptrdiff_t *) nullptr);
+  return __copy(first, last, result);
 }
 
 template<typename InputIterator, typename OutputIterator>
 struct __copy_dispatch {
   OutputIterator operator()(InputIterator first, InputIterator last, OutputIterator result) {
-    return __copy(first, last, result, iterator_category(first));
+    return __copy(first, last, result);
   }
 };
 template<typename T>

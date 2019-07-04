@@ -1,14 +1,14 @@
 #include <new>
-#include "../alloc.h"
+#include "../__alloc.h"
 
 namespace TinySTL {
 
-char *alloc::start_free = nullptr;
-char *alloc::end_free = nullptr;
-size_t alloc::heap_size = 0;
-alloc::node *alloc::free_list[alloc::NFREELISTS] = { nullptr };
+char *__alloc::start_free = nullptr;
+char *__alloc::end_free = nullptr;
+size_t __alloc::heap_size = 0;
+__alloc::node *__alloc::free_list[__alloc::NFREELISTS] = { nullptr };
 
-void *alloc::allocate(size_t bytes) {
+void *__alloc::allocate(size_t bytes) {
   if (bytes == 0)
     return nullptr;
   if (bytes > MAXBYTES) {
@@ -24,7 +24,7 @@ void *alloc::allocate(size_t bytes) {
   return list;
 }
 
-void alloc::deallocate(void *ptr, size_t bytes) {
+void __alloc::deallocate(void *ptr, size_t bytes) {
   if (bytes == 0)
     return;
   if (bytes > MAXBYTES) {
@@ -37,12 +37,12 @@ void alloc::deallocate(void *ptr, size_t bytes) {
   free_list[index] = the_node;
 }
 
-void *alloc::reallocate(void *ptr, size_t old_size, size_t new_size) {
+void *__alloc::reallocate(void *ptr, size_t old_size, size_t new_size) {
   deallocate(ptr, old_size);
   return allocate(new_size);
 }
 
-size_t alloc::refill(int index) {
+size_t __alloc::refill(int index) {
   // 每次默认添加20个节点
   int nobjs = 20;
   int unit = index2size(index);
@@ -61,7 +61,7 @@ size_t alloc::refill(int index) {
   return nobjs;
 }
 
-char *alloc::chunk_alloc(size_t size, int *nobjs) {
+char *__alloc::chunk_alloc(size_t size, int *nobjs) {
   char *res;
   size_t total_bytes = size * (*nobjs);
   size_t byte_left = end_free - start_free;
