@@ -26,16 +26,13 @@ class vector {
   iterator end_of_storage;
 
  public:
-  /*************** 构造、复制、析构相关 ************/
+  /*************** 构造、复制、赋值、析构相关 ************/
   vector() : start(nullptr), finish(nullptr), end_of_storage(nullptr) {}
   template<typename InputIterator>
-  vector(InputIterator first, InputIterator last) {
-    allocate_and_copy(first, last);
-  }
-  // 处理指针和数字间的区别
-  vector(int n, int val) {
-    allocate_and_fill_n(n, val);
-  }
+  vector(InputIterator first, InputIterator last) { allocate_and_copy(first, last); }
+  // TODO：处理指针和数字间的区别
+  vector(int n, int val) { allocate_and_fill_n(n, val); }
+  // TODO: std 的做法是调用 type_value 的构造函数n次，我这里是构造一个tmp，再调用 n 次拷贝构造
   explicit vector(size_type n) { allocate_and_fill_n(n, value_type()); }
   vector(size_type n, const value_type &value) { allocate_and_fill_n(n, value); }
 
@@ -62,9 +59,7 @@ class vector {
     }
     return true;
   }
-  bool operator!=(const vector &v) const {
-    return !(*this == v);
-  }
+  bool operator!=(const vector &v) const { return !(*this == v); }
 
   /*************** 迭代器相关 ************/
   iterator begin() { return start; }
@@ -115,7 +110,7 @@ class vector {
     insert_aux(position, first, last, is_integer());
   }
   void clear() {
-    destroy(start, finish);
+    data_allocator::destroy(start, finish);
     finish = start;
   }
   void swap(vector &v) {
@@ -125,16 +120,27 @@ class vector {
       TinySTL::swap(end_of_storage, v.end_of_storage);
     }
   }
-  void push_back(const value_type &val) { insert(end(), val); }
+  void push_back(const value_type &val) {
+    if (finish != end_of_storage) {
+      data_allocator::construct(finish, val);
+      ++finish;
+    } else {
+      insert(end(), val);
+    }
+  }
   void pop_back() {
     --finish;
     data_allocator::destroy(finish);
   }
+  /// 举例：1，2，3，删除 1：2-> 1, 3->2, 析构3
   iterator erase(iterator first, iterator last) {
-    iterator new_it = first, old_it = last;
-    for (; old_it != finish; ++old_it, ++new_it)
-      *new_it = *old_it;
-    finish -= last - first;
+    // 需要移动 last 到 finish 之间的元素
+    if (last != finish) {
+      TinySTL::copy(last, finish, first);
+    }
+    auto new_finish = finish - (last - first);
+    data_allocator::destroy(new_finish, finish);
+    finish = new_finish;
     return first;
   }
   iterator erase(iterator position) { return erase(position, position + 1); }
@@ -166,7 +172,7 @@ class vector {
   }
   template<typename InputIterator>
   void reallocate_and_copy(iterator fill_position, InputIterator first, InputIterator last) {
-    auto need_storage = distance(first, last);
+    auto need_storage = TinySTL::distance(first, last);
     auto new_cap = get_new_capacity(need_storage);
 
     iterator new_start = data_allocator::allocate(new_cap);
@@ -197,22 +203,30 @@ class vector {
     size_type old_cap = capacity();
     return old_cap + max(old_cap, extra_n);
   }
-  template <typename Integer>
+  template<typename Integer>
   void insert_aux(iterator position, Integer n, const value_type &val, __true_type);
   template<typename InputIterator>
   void insert_aux(iterator position, InputIterator first, InputIterator last, __false_type);
 };
 
 template<typename T, typename Alloc>
-template <typename Integer>
+template<typename Integer>
 void vector<T, Alloc>::insert_aux(iterator position, Integer n, const value_type &val, __true_type) {
   if (n == 0) return;
 
   if (left_storage() >= n) {
     // 剩下空间够用
+    auto need_move_size = finish - position;
     auto new_finish = finish + n;
-    TinySTL::copy_backward(position, finish, new_finish);
-    TinySTL::uninitialized_fill_n(position, n, val);
+    if (need_move_size > n) {
+      TinySTL::uninitialized_copy(finish - n, finish, finish);
+      TinySTL::copy_backward(position, finish - n, finish);
+      TinySTL::fill_n(position, n, val);
+    } else {
+      TinySTL::uninitialized_fill_n(finish, n - need_move_size, val);
+      TinySTL::uninitialized_copy(position, finish, finish + (n - need_move_size));
+      TinySTL::fill_n(position, need_move_size, val);
+    }
     finish = new_finish;
   } else {
     // 空间不够用，重新分配
@@ -222,12 +236,19 @@ void vector<T, Alloc>::insert_aux(iterator position, Integer n, const value_type
 template<typename T, typename Alloc>
 template<typename InputIterator>
 void vector<T, Alloc>::insert_aux(iterator position, InputIterator first, InputIterator last, __false_type) {
-  auto storage_need = distance(first, last);
+  auto storage_need = TinySTL::distance(first, last);
   if (left_storage() >= storage_need) {
+    auto need_move_size = finish - position;
     auto new_finish = finish + storage_need;
-    // TODO：这里调用 copy 是否合理？copy是基于赋值的，当如果目的地没有初始化（构造）如何赋值？
-    TinySTL::copy_backward(position, finish, new_finish);
-    TinySTL::uninitialized_copy(first, last, position);
+    if (need_move_size > storage_need) {
+      TinySTL::uninitialized_copy(finish - storage_need, finish, finish);
+      TinySTL::copy_backward(position, finish - storage_need, finish);
+      TinySTL::copy(first, last, position);
+    } else {
+      TinySTL::uninitialized_copy(last - (storage_need - need_move_size), last, finish);
+      TinySTL::uninitialized_copy(position, finish, finish + (storage_need - need_move_size));
+      TinySTL::copy(first, last - (storage_need - need_move_size), position);
+    }
     finish = new_finish;
   } else {
     reallocate_and_copy(position, first, last);

@@ -74,6 +74,9 @@ class CountLife {
         + "\ncopy_ctor_cnt: " + std::to_string(copy_ctor_cnt)
         + "\ncopy_assignment_cnt: " + std::to_string(copy_assignment_cnt);
   }
+  static int ctorsubdtor() {
+    return ctor_cnt + copy_ctor_cnt - dtor_cnt;
+  }
 };
 int CountLife::ctor_cnt = 0;
 int CountLife::dtor_cnt = 0;

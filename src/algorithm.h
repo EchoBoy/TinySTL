@@ -117,7 +117,7 @@ copy_backward(const char *first, const char *last, char *result) {
 template<typename InputIterator, typename OutputIterator>
 inline OutputIterator
 __copy(InputIterator first, InputIterator last, OutputIterator result) {
-  for (auto n = distance(first, last); n > 0; --n, ++result, ++first)
+  for (auto n = TinySTL::distance(first, last); n > 0; --n, ++result, ++first)
     *result = *first;
   return result;
 }
@@ -137,7 +137,7 @@ __copy_t(const T *first, const T *last, T *result, __false_type) {
 template<typename InputIterator, typename OutputIterator>
 struct __copy_dispatch {
   OutputIterator operator()(InputIterator first, InputIterator last, OutputIterator result) {
-    return __copy(first, last, result);
+    return TinySTL::__copy(first, last, result);
   }
 };
 template<typename T>

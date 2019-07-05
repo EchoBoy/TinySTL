@@ -13,7 +13,7 @@ using stdVec = std::vector<T>;
 template<typename T>
 using tsVec = TinySTL::vector<T>;
 
-TEST(VectorTest, Constructor) {
+TEST(VectorTest, Ctor) {
   stdVec<std::string> v1(10, "ligand");
   tsVec<std::string> v2(10, "ligand");
   EXPECT_TRUE(container_equal(v1, v2));
@@ -65,24 +65,6 @@ TEST(VectorTest, Iterator) {
   }
 }
 
-//void testCase5() {
-//  tsVec<int> myvector(5);  // 5 default-constructed ints
-//  int i = 0;
-//  tsVec<int>::reverse_iterator rit = myvector.rbegin();
-//  for (; rit != myvector.rend(); ++rit)
-//    *rit = ++i;
-//
-//  i = 5;
-//  for (tsVec<int>::iterator it = myvector.begin(); it != myvector.end(); ++it, --i) {
-//    assert(*it == i);
-//  }
-//
-//  i = 1;
-//  for (tsVec<int>::reverse_iterator it = myvector.rbegin(); it != myvector.rend(); ++it, ++i) {
-//    assert(*it == i);
-//  }
-//}
-
 TEST(VectorTest, Size) {
   tsVec<int> v(11, 0);
   EXPECT_EQ(v.size(), 11);
@@ -128,8 +110,8 @@ TEST(VectorTest, SetValue) {
 }
 
 TEST(VectorTest, Swap) {
-  tsVec<int> foo(3, 100);   // three ints with a value of 100
-  tsVec<int> bar(2, 200);   // five ints with a value of 200
+  tsVec<int> foo(3, 100);
+  tsVec<int> bar(2, 200);
   EXPECT_TRUE(TinySTL::Test::container_equal(foo, stdVec<int>{100, 100, 100}));
   EXPECT_TRUE(TinySTL::Test::container_equal(bar, stdVec<int>{200, 200}));
 
@@ -187,33 +169,65 @@ TEST(VectorTest, Erase) {
   EXPECT_TRUE(TinySTL::Test::container_equal(v1, v2));
 }
 
+namespace {
+typedef TinySTL::Test::CountLife TestItem;
 
 // 以上测试都是常规操作，这个考察构造，复制构造，析构和assignment operate。
-TEST(VectorTest, CtorAndDctor) {
-  // TODO: 1. 解决死循环 2. 理清 vector 内的对象什么周期，以及各种底层copy、fill 是否合理
-  typedef TinySTL::Test::CountLife TestItem;
+TEST(VectorTest, ProInsert) {
   auto obj = TestItem();
-
-//  TestItem::set_zero_all();
-//  tsVec<TestItem> t;
-//  t.push_back(TestItem());
-//  t.push_back(TestItem());
-//  t.push_back(TestItem());
-//  t.insert(t.begin(), TestItem());
-//  auto t_res = TestItem::to_string();
+  stdVec<TestItem> data(10);
 
   TestItem::set_zero_all();
+  tsVec<TestItem> t;
+  t.push_back(obj);
+  t.insert(t.begin(), 3, obj);
+  t.insert(t.begin(), obj);
+  auto t_res = TestItem::ctorsubdtor();
 
+  TestItem::set_zero_all();
   stdVec<TestItem> t1;
   t1.push_back(obj);
-  t1.push_back(obj);
-  t1.push_back(obj);
+  t1.insert(t1.begin(), 3, obj);
   t1.insert(t1.begin(), obj);
-  auto t1_res = TestItem::to_string();
-  cout << t1_res;
+  auto t1_res = TestItem::ctorsubdtor();
+  EXPECT_EQ(t_res, t1_res);
 
-//  EXPECT_EQ(t_res, t1_res);
+  TestItem::set_zero_all();
+  tsVec<TestItem> t3;
+  t3.reserve(30);
+  t3.insert(t3.begin(), 3, obj);
+  t3.insert(t3.begin() + 2, data.begin(), data.end());
+  t3.insert(t3.begin() + 2, data.begin(), data.end());
+  auto t3_res = TestItem::ctorsubdtor();
 
-//  t.insert(t.begin(), t.begin(), t.begin() + 1);
+  TestItem::set_zero_all();
+  stdVec<TestItem> t4;
+  t4.reserve(30);
+  t4.insert(t4.begin(), 3, obj);
+  t4.insert(t4.begin() + 2, data.begin(), data.end());
+  t4.insert(t4.begin() + 2, data.begin(), data.end());
+  auto t4_res = TestItem::ctorsubdtor();
+  EXPECT_EQ(t3_res, t4_res);
+}
+TEST(VectorTest, ProErase) {
+  TestItem::set_zero_all();
+  stdVec<TestItem> v1(10);
+  v1.erase(v1.begin());
+  auto v1_res = TestItem::ctorsubdtor();
 
+  TestItem::set_zero_all();
+  tsVec<TestItem> v2(10);
+  v2.erase(v2.begin());
+  auto v2_res = TestItem::ctorsubdtor();
+  EXPECT_EQ(v1_res, v2_res);
+
+  TestItem::set_zero_all();
+  v1.erase(v1.begin() + 1, v1.begin() + 5);
+  v1_res = TestItem::ctorsubdtor();
+
+  TestItem::set_zero_all();
+  v2.erase(v2.begin() + 1, v2.begin() + 5);
+  v2_res = TestItem::ctorsubdtor();
+  EXPECT_EQ(v1_res, v2_res);
+}
 }

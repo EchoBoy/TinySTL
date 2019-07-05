@@ -1,11 +1,12 @@
 // 一些C++知识的整理
 
 #include <iostream>
+#include <vector>
 
 using std::cout;
 using std::endl;
 
-// 多态(polymorphically)的使用 与 虚函数，JAVA中默认为虚。
+/// 多态(polymorphically)的使用 与 虚函数，JAVA中默认为虚。
 class Animal {
  protected:
   int weight;
@@ -28,7 +29,7 @@ void test1() {
   p->walk();
 }
 
-// const_case 莫名其妙
+/// const_case 莫名其妙
 void test2() {
   const int a = 0;
   const int *p = &a;
@@ -38,7 +39,20 @@ void test2() {
   cout << "const *p: " << *p << endl;
 }
 
+/// reference vector faild
+void test3() {
+  std::vector<int *> vec;
+  int tmp = 0;
+  int *a = &tmp;
+
+  vec.push_back(a);
+  vec.push_back(a);
+  cout << vec[0] << " " << vec[1] << endl;
+  *a = 1;
+  cout << vec[0] << " " << vec[1] << endl;
+}
+
 int main(int, char **) {
-  cout << "Hello, World!" << endl;
+  test3();
   return 0;
 }
