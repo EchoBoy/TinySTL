@@ -98,7 +98,7 @@ class vector {
   reference back() { return *(end() - 1); }
   pointer data() { return start; }
 
-  /*************** 相关容器相关 ************/
+  /*************** 插入删除操作相关 ************/
   void insert(iterator position, const value_type &val) { insert(position, 1, val); }
   void insert(iterator position, size_type n, const value_type &val) {
     typedef typename __type_traits<size_type>::is_integer is_integer;

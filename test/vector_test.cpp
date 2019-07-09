@@ -2,8 +2,11 @@
 #include <string>
 #include <array>
 #include <gtest/gtest.h>
+
 #include "../src/vector.h"
 #include "test_utils.h"
+namespace TinySTL {
+namespace VectorTest {
 
 using TinySTL::Test::container_equal;
 
@@ -229,5 +232,7 @@ TEST(VectorTest, ProErase) {
   v2.erase(v2.begin() + 1, v2.begin() + 5);
   v2_res = TestItem::ctorsubdtor();
   EXPECT_EQ(v1_res, v2_res);
+}
+}
 }
 }

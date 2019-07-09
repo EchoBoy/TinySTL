@@ -9,6 +9,17 @@ namespace TinySTL {
 namespace Test {
 
 template<typename Container1, typename Container2>
+bool container_equal(Container1 &con1, Container2 &con2) {
+  auto first1 = con1.begin(), last1 = con1.end();
+  auto first2 = con2.begin(), last2 = con2.end();
+  for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
+    if (*first1 != *first2)
+      return false;
+  }
+  return first1 == last1 && first2 == last2;
+}
+
+template<typename Container1, typename Container2>
 bool container_equal(const Container1 &con1, const Container2 &con2) {
   auto first1 = con1.begin(), last1 = con1.end();
   auto first2 = con2.begin(), last2 = con2.end();
@@ -78,10 +89,6 @@ class CountLife {
     return ctor_cnt + copy_ctor_cnt - dtor_cnt;
   }
 };
-int CountLife::ctor_cnt = 0;
-int CountLife::dtor_cnt = 0;
-int CountLife::copy_ctor_cnt = 0;
-int CountLife::copy_assignment_cnt = 0;
 }
 }
 
