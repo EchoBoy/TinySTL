@@ -44,7 +44,7 @@ aux_source_directory(./src/impl DIR_SRC_SRCS)
 # 测试cpp
 aux_source_directory(./test DIR_TEST_SRCS)
 # 生成测试
-add_executable(TinySTLTest ${DIR_TEST_SRCS} ${DIR_SRC_SRCS} test/list_test.cpp test/test_utils.cpp)
+add_executable(TinySTLTest ${DIR_TEST_SRCS} ${DIR_SRC_SRCS})
 
 target_link_libraries(TinySTLTest gtest_main)
 
@@ -54,4 +54,4 @@ target_link_libraries(TinySTLTest gtest_main)
 
 # 自定义编译 生成实验(一些C++知识的整理）
 aux_source_directory(./experiment DIR_EXP_SRCS)
-add_executable(exp ${DIR_EXP_SRCS} src/list.h src/functional.h)
+add_executable(exp ${DIR_EXP_SRCS})

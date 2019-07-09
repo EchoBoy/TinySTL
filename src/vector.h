@@ -1,9 +1,9 @@
 #ifndef TINYSTL_SRC_VECTOR_H_
 #define TINYSTL_SRC_VECTOR_H_
 
-#include "./allocator.h"
-#include "./algorithm.h"
-#include "./uninitialized.h"
+#include "allocator.h"
+#include "algorithm.h"
+#include "uninitialized.h"
 #include <stddef.h> // for size_t, ptrdiff_t
 
 namespace TinySTL {
@@ -29,12 +29,12 @@ class vector {
   /*************** 构造、复制、赋值、析构相关 ************/
   vector() : start(nullptr), finish(nullptr), end_of_storage(nullptr) {}
   template<typename InputIterator>
-  vector(InputIterator first, InputIterator last) { allocate_and_copy(first, last); }
-  // TODO：处理指针和数字间的区别
-  vector(int n, int val) { allocate_and_fill_n(n, val); }
+  vector(InputIterator first, InputIterator last) {
+    init(first, last, typename __type_traits<InputIterator>::is_integer());
+  }
+  vector(size_type n, const value_type &value) { allocate_and_fill_n(n, value); }
   // TODO: std 的做法是调用 type_value 的构造函数n次，我这里是构造一个tmp，再调用 n 次拷贝构造
   explicit vector(size_type n) { allocate_and_fill_n(n, value_type()); }
-  vector(size_type n, const value_type &value) { allocate_and_fill_n(n, value); }
 
   vector(const vector &v) { allocate_and_copy(v.begin(), v.end()); }
   vector &operator=(const vector &v) {
@@ -207,6 +207,11 @@ class vector {
   void insert_aux(iterator position, Integer n, const value_type &val, __true_type);
   template<typename InputIterator>
   void insert_aux(iterator position, InputIterator first, InputIterator last, __false_type);
+  template<typename InputIterator>
+  void init(InputIterator first, InputIterator last, __false_type) { allocate_and_copy(first, last); }
+  template<typename Integer>
+  void init(Integer n, const value_type &val, __true_type) { allocate_and_fill_n(n, val); }
+
 };
 
 template<typename T, typename Alloc>

@@ -130,7 +130,7 @@ class list {
   iterator erase(iterator position) { return __list_iterator<T>(__erase(position.ptr)); }
   iterator erase(iterator first, iterator last) { return __list_iterator<T>(__erase(first.ptr, last.ptr)); }
 
-  void swap(list<T> &val) {
+  void swap(list &val) {
     if (this != &val) {
       TinySTL::swap(dumpy_head, val.dumpy_head);
     }
@@ -152,15 +152,15 @@ class list {
       it = pred(*it) ? erase(it) : ++it;
     }
   }
-  void splice(iterator position, list<T> &x) {
+  void splice(iterator position, list &x) {
     splice(position, x, x.begin(), x.end());
   }
-  void splice(iterator position, list<T> &x, iterator it) {
+  void splice(iterator position, list &x, iterator it) {
     auto last = it;
     ++last;
     splice(position, x, it, last);
   }
-  void splice(iterator position, list<T> &, iterator first, iterator last) {
+  void splice(iterator position, list &, iterator first, iterator last) {
     node_ptr curr = first.ptr;
     node_ptr prev = first.ptr->prev;
     node_ptr next = last.ptr;
@@ -170,7 +170,7 @@ class list {
   }
 
   template<typename Compare>
-  void merge(list<T> &x, Compare comp) {
+  void merge(list &x, Compare comp) {
     auto it1 = begin();
     auto it2 = x.begin();
     auto last1 = end();
@@ -187,7 +187,7 @@ class list {
     if (it2 != last2)
       transfer(last1.ptr, it2.ptr, last2.ptr);
   }
-  void merge(list<T> &x) { merge(x, TinySTL::less<T>()); }
+  void merge(list &x) { merge(x, TinySTL::less<T>()); }
 
   void reverse() {
     if (dumpy_head->next->next == dumpy_head)

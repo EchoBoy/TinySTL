@@ -1,8 +1,8 @@
 #ifndef TINYSTL_SRC_UNINITIALIZED_H_
 #define TINYSTL_SRC_UNINITIALIZED_H_
 
-#include "./type_traits.h"
-#include "./algorithm.h"
+#include "type_traits.h"
+#include "algorithm.h"
 #include "__construct.h"
 
 namespace TinySTL {

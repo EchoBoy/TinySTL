@@ -7,8 +7,8 @@
 
 #include <new>
 
-#include "./type_traits.h"
-#include "./iterator.h"
+#include "type_traits.h"
+#include "iterator.h"
 
 namespace TinySTL {
 class __construct {

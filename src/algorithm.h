@@ -1,8 +1,8 @@
 #ifndef TINYSTL_SRC_ALGORITHM_H_
 #define TINYSTL_SRC_ALGORITHM_H_
 
-#include "./iterator.h"
-#include "./type_traits.h"
+#include "iterator.h"
+#include "type_traits.h"
 
 namespace TinySTL {
 
