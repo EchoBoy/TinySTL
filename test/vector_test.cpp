@@ -173,22 +173,28 @@ TEST(VectorTest, Erase) {
 }
 
 namespace {
+template<typename T>
+using stdC = std::vector<T>;
+template<typename T>
+using tsC = TinySTL::vector<T>;
+
 typedef TinySTL::Test::CountLife TestItem;
+#define TestName VectorTest
 
 // 以上测试都是常规操作，这个考察构造，复制构造，析构和assignment operate。
-TEST(VectorTest, ProInsert) {
+TEST(TestName, ProInsert) {
   auto obj = TestItem();
-  stdVec<TestItem> data(10);
+  stdC<TestItem> data(10);
 
   TestItem::set_zero_all();
-  tsVec<TestItem> t;
+  tsC<TestItem> t;
   t.push_back(obj);
   t.insert(t.begin(), 3, obj);
   t.insert(t.begin(), obj);
   auto t_res = TestItem::ctorsubdtor();
 
   TestItem::set_zero_all();
-  stdVec<TestItem> t1;
+  stdC<TestItem> t1;
   t1.push_back(obj);
   t1.insert(t1.begin(), 3, obj);
   t1.insert(t1.begin(), obj);
@@ -196,7 +202,7 @@ TEST(VectorTest, ProInsert) {
   EXPECT_EQ(t_res, t1_res);
 
   TestItem::set_zero_all();
-  tsVec<TestItem> t3;
+  tsC<TestItem> t3;
   t3.reserve(30);
   t3.insert(t3.begin(), 3, obj);
   t3.insert(t3.begin() + 2, data.begin(), data.end());
@@ -204,7 +210,7 @@ TEST(VectorTest, ProInsert) {
   auto t3_res = TestItem::ctorsubdtor();
 
   TestItem::set_zero_all();
-  stdVec<TestItem> t4;
+  stdC<TestItem> t4;
   t4.reserve(30);
   t4.insert(t4.begin(), 3, obj);
   t4.insert(t4.begin() + 2, data.begin(), data.end());
@@ -212,14 +218,14 @@ TEST(VectorTest, ProInsert) {
   auto t4_res = TestItem::ctorsubdtor();
   EXPECT_EQ(t3_res, t4_res);
 }
-TEST(VectorTest, ProErase) {
+TEST(TestName, ProErase) {
   TestItem::set_zero_all();
-  stdVec<TestItem> v1(10);
+  stdC<TestItem> v1(10);
   v1.erase(v1.begin());
   auto v1_res = TestItem::ctorsubdtor();
 
   TestItem::set_zero_all();
-  tsVec<TestItem> v2(10);
+  tsC<TestItem> v2(10);
   v2.erase(v2.begin());
   auto v2_res = TestItem::ctorsubdtor();
   EXPECT_EQ(v1_res, v2_res);
@@ -233,6 +239,10 @@ TEST(VectorTest, ProErase) {
   v2_res = TestItem::ctorsubdtor();
   EXPECT_EQ(v1_res, v2_res);
 }
+#undef TestName
 }
+
+
+
 }
 }

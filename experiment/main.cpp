@@ -39,8 +39,9 @@ void test2() {
   cout << "const *p: " << *p << endl;
 }
 
-/// reference vector faild
+/// 引用是 second class, 指针是 first class，大部分情况下引用是指针的 syntax sugar，除了常量引用可以引用临时变量。
 void test3() {
+//  std::vector<int &> vec1;
   std::vector<int *> vec;
   int tmp = 0;
   int *a = &tmp;
@@ -52,7 +53,10 @@ void test3() {
   cout << vec[0] << " " << vec[1] << endl;
 }
 
+void fun(int a, int b) {}
+void fun(double a, double b) {}
+
 int main(int, char **) {
-  test3();
+//  test3();
   return 0;
 }

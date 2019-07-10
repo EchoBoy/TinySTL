@@ -16,6 +16,7 @@ class vector {
   typedef value_type *iterator;
   typedef const value_type *const_iterator;
   typedef value_type &reference;
+  typedef const value_type &const_reference;
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
 
@@ -93,7 +94,7 @@ class vector {
 
   /*************** 访问元素相关 ************/
   reference operator[](const size_type i) { return *(begin() + i); }
-  const_iterator operator[](const size_type i) const { return *(cbegin() + i); }
+  const_reference operator[](const size_type i) const { return *(cbegin() + i); }
   reference front() { return *(begin()); }
   reference back() { return *(end() - 1); }
   pointer data() { return start; }

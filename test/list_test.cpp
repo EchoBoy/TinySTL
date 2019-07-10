@@ -207,5 +207,6 @@ TEST(ListTest, OperatorEq) {
   EXPECT_TRUE(TinySTL::Test::container_equal(l1, l3));
   EXPECT_FALSE(TinySTL::Test::container_equal(l1, l2));
 }
+
 }
 }

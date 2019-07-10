@@ -10,9 +10,20 @@ namespace TinySTL {
 
 template<typename T>
 struct __list_node {
+  // 成员变量私有，通过定义 friend class 来访问
+  template<typename>
+  friend
+  class __list_iterator;
+  template<typename, typename>
+  friend
+  class list;
+
+ private:
   T data;
   __list_node *prev;
   __list_node *next;
+
+ public:
   __list_node(const T &d, __list_node *p, __list_node *n) : data(d), prev(p), next(n) {}
   bool operator==(const __list_node &n) {
     return data = n.data && prev == n.prev && next == n.next;
@@ -24,8 +35,14 @@ struct __list_iterator : public iterator<bidirectional_iterator_tag, T> {
   typedef __list_iterator<T> self_type;
   typedef __list_node<T> *node_ptr;
 
+  template<typename T1, typename Alloc>
+  friend
+  class list;
+
+ private:
   node_ptr ptr;
 
+ public:
   __list_iterator() : ptr(nullptr) {}
   explicit __list_iterator(node_ptr p) : ptr(p) {}
   __list_iterator(const self_type &val) : ptr(val.ptr) {}

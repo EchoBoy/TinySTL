@@ -8,6 +8,11 @@ using std::endl;
 namespace TinySTL {
 namespace Test {
 
+struct EmptyStruct {
+  bool operator==(const EmptyStruct &x) { return true; }
+  bool operator!=(const EmptyStruct &x) { return false; }
+};
+
 template<typename Container1, typename Container2>
 bool container_equal(Container1 &con1, Container2 &con2) {
   auto first1 = con1.begin(), last1 = con1.end();
