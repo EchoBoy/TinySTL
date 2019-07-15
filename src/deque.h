@@ -83,7 +83,7 @@ struct __deque_iterator {
   self_type &operator+=(difference_type n) {
     if (n == 0) return *this;
     difference_type offset = n + (cur - first);
-    if (offset > 0 && offset < buffer_size())
+    if (offset >= 0 && offset < buffer_size())
       cur += n;
     else {
       difference_type node_offset =
@@ -161,7 +161,7 @@ class deque {
   /*************** 比较相关 ************/
   bool operator==(const deque &x) const {
     auto b1 = begin(), b2 = x.begin();
-    auto e1 = end(), e2 = end();
+    auto e1 = end(), e2 = x.end();
     for (; b1 != e1 && b2 != e2; ++b1, ++b2) {
       if (*b1 != *b2)
         return false;
@@ -329,14 +329,14 @@ class deque {
       // 如果map一直向一个方向生长，是会出现这种情况的。只需要调整数据的位置，不需要重新分配空间。
       new_start = map + (map_size - new_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
       if (new_start < start.node)
-        copy(start.node, finish.node + 1, new_start);
+        TinySTL::copy(start.node, finish.node + 1, new_start);
       else
-        copy_backward(start.node, finish.node + 1, new_start + old_num_nodes);
+        TinySTL::copy_backward(start.node, finish.node + 1, new_start + old_num_nodes);
     } else {
       size_type new_map_size = map_size + max(map_size, nodes_to_add) + 2;
       map_pointer new_map = map_allocator::allocate(new_map_size);
       new_start = new_map + (new_map_size - new_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
-      copy(start.node, finish.node + 1, new_start);
+      TinySTL::copy(start.node, finish.node + 1, new_start);
       map_allocator::deallocate(map, map_size);
       map = new_map;
       map_size = new_map_size;

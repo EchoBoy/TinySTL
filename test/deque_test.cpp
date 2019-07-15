@@ -27,15 +27,15 @@ TEST(DequeTest, Ctor) {
 
   auto dq5(dq1);
   auto dq6(dq2);
-  assert(TinySTL::Test::container_equal(dq5, dq6));
+  EXPECT_TRUE(TinySTL::Test::container_equal(dq5, dq6));
 
   auto dq7 = dq3;
   auto dq8 = dq4;
-  assert(TinySTL::Test::container_equal(dq7, dq8));
+  EXPECT_TRUE(TinySTL::Test::container_equal(dq7, dq8));
 
   auto dq9 = std::move(dq7);
   auto dq10 = std::move(dq8);
-  assert(TinySTL::Test::container_equal(dq9, dq10));
+  EXPECT_TRUE(TinySTL::Test::container_equal(dq9, dq10));
 }
 TEST(DequeTest, Size) {
   tsDQ<int> dq1;
