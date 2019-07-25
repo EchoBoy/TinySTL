@@ -5,7 +5,7 @@
 #include "../src/queue.h"
 
 namespace TinySTL {
-namespace TEST {
+namespace Test {
 
 template<typename T>
 using stdQ = std::queue<T>;

@@ -5,8 +5,9 @@
 
 #include "../src/vector.h"
 #include "test_utils.h"
+
 namespace TinySTL {
-namespace VectorTest {
+namespace Test {
 
 using TinySTL::Test::container_equal;
 
@@ -241,8 +242,6 @@ TEST(TestName, ProErase) {
 }
 #undef TestName
 }
-
-
 
 }
 }

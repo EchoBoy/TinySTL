@@ -5,7 +5,7 @@
 #include "../src/stack.h"
 
 namespace TinySTL {
-namespace TEST {
+namespace Test {
 
 template<typename T>
 using stdSt = std::stack<T>;

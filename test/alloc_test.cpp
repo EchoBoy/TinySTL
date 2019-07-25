@@ -1,5 +1,9 @@
-#include "../src/__alloc.h"
 #include <gtest/gtest.h>
+
+#include "../src/__alloc.h"
+
+namespace TinySTL {
+namespace Test {
 
 TEST(Alloc, Simple) {
   for (int i = 1; i < 1024; ++i) {
@@ -19,3 +23,5 @@ TEST(Alloc, Zero) {
   EXPECT_TRUE(true);
 }
 
+}
+}

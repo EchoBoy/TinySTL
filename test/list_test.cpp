@@ -7,7 +7,7 @@
 #include "test_utils.h"
 
 namespace TinySTL {
-namespace ListTest {
+namespace Test {
 
 template<typename T>
 using stdL = std::list<T>;
@@ -203,7 +203,6 @@ TEST(ListTest, Splice) {
 }
 TEST(ListTest, OperatorEq) {
   tsL<int> l1(10, 2), l2(10, 1), l3(10, 2);
-
   EXPECT_TRUE(TinySTL::Test::container_equal(l1, l3));
   EXPECT_FALSE(TinySTL::Test::container_equal(l1, l2));
 }

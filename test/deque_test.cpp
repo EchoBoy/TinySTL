@@ -6,7 +6,8 @@
 #include "test_utils.h"
 
 namespace TinySTL {
-namespace DequeTest {
+namespace Test {
+
 using TinySTL::Test::container_equal;
 
 template<typename T>

@@ -6,7 +6,7 @@
 #include "test_utils.h"
 
 namespace TinySTL {
-namespace AlgorithmTEST {
+namespace Test {
 
 TEST(HeapTEST, heap2) {
   std::vector<int> test_case{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -1, -2, -3};
