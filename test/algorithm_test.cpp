@@ -8,6 +8,19 @@
 namespace TinySTL {
 namespace AlgorithmTEST {
 
+TEST(HeapTEST, heap2) {
+  std::vector<int> test_case{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -1, -2, -3};
+  std::vector<int> v1(test_case);
+  std::vector<int> v2(test_case);
+  std::make_heap(v1.begin(), v1.end());
+  TinySTL::make_heap(v2.begin(), v2.end());
+  while (!v1.empty() && !v2.empty()) {
+    EXPECT_TRUE(v1.front() == v2.front());
+    v1.pop_back();
+    v2.pop_back();
+  }
+}
+
 TEST(HeapTEST, heap) {
   int test_case[] = {10, 20, 30, 5, 15};
   std::vector<int> v1(test_case, test_case + 5);

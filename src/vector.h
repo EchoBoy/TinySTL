@@ -96,6 +96,7 @@ class vector {
   reference operator[](const size_type i) { return *(begin() + i); }
   const_reference operator[](const size_type i) const { return *(cbegin() + i); }
   reference front() { return *(begin()); }
+  const_reference front() const { return *(begin()); }
   reference back() { return *(end() - 1); }
   pointer data() { return start; }
 
