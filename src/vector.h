@@ -4,7 +4,6 @@
 #include "allocator.h"
 #include "algorithm.h"
 #include "uninitialized.h"
-#include <stddef.h> // for size_t, ptrdiff_t
 
 namespace TinySTL {
 

@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <array>
+
 #include <gtest/gtest.h>
 
 #include "../src/vector.h"

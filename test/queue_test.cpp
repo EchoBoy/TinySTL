@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
 #include <queue>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "../src/queue.h"
 

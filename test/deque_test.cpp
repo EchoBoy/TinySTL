@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
 #include <deque>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "../src/deque.h"
 #include "test_utils.h"
@@ -111,7 +112,7 @@ TEST(DequeTest, Clear) {
   dq2.clear();
   EXPECT_TRUE(TinySTL::Test::container_equal(dq1, dq2));
 
-  for (auto i = 0 ; i< 10; ++i) {
+  for (auto i = 0; i < 10; ++i) {
     dq1.push_front(i);
     dq2.push_front(i);
   }
@@ -122,6 +123,13 @@ TEST(DequeTest, ZeroEle) {
   stdDQ<TinySTL::Test::EmptyStruct> dq1(10);
   tsDQ<TinySTL::Test::EmptyStruct> dq2(10);
   EXPECT_TRUE(TinySTL::Test::container_equal(dq1, dq2));
+}
+
+TEST(DequeTest, Const) {
+  const stdDQ<int> dp1(10, 12);
+  const tsDQ<int> dp2(10, 12);
+  EXPECT_TRUE(*(dp1.begin()) == *(dp2.begin()));
+  EXPECT_TRUE(dp1[0] == dp2[0]);
 }
 
 }

@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
 #include <stack>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "../src/stack.h"
 

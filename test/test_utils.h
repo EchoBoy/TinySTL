@@ -1,7 +1,9 @@
 #ifndef TINYSTL_TEST_TEST_UTILS_H_
 #define TINYSTL_TEST_TEST_UTILS_H_
+
 #include <iostream>
 #include <string>
+
 using std::cout;
 using std::endl;
 

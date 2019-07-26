@@ -1,5 +1,6 @@
 #ifndef TINYSTL_SRC_QUEUE_H_
 #define TINYSTL_SRC_QUEUE_H_
+
 #include "deque.h"
 
 namespace TinySTL {

@@ -8,19 +8,16 @@
 
 namespace TinySTL {
 
-// 默认一个 node 字节数
-const static int __node_bytes = 1024;
-const static int MiniMapSize = 8;
-
 // ok_TODO: 这里没有考虑element_size 为零的情况. C++ 规定 class 或 struct 的sizeof最小结果为1。
+/// 一个 buf 可以存几个元素
 static inline size_t __buf_size(size_t element_size) {
+  // 默认一个 node 字节数
+  const int __node_bytes = 1024;
   return __node_bytes > element_size ? __node_bytes / element_size : 1;
 }
 
 template<typename T, typename Ref, typename Ptr>
 struct __deque_iterator {
-  typedef __deque_iterator<T, T &, T *> iterator;
-  typedef __deque_iterator<T, const T &, const T *> const_iterator;
   static size_t buffer_size() { return __buf_size(sizeof(T)); }
 
   typedef random_iterator_tag iterator_category;
@@ -30,13 +27,13 @@ struct __deque_iterator {
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
   typedef T **map_pointer;
-
   typedef __deque_iterator self_type;
 
+  // 成员变量 声明为private
  private:
-  T *cur;
-  T *first;
-  T *last;
+  pointer cur;
+  pointer first;
+  pointer last;
   map_pointer node;
 
  private:
@@ -47,6 +44,8 @@ struct __deque_iterator {
   }
  public:
   __deque_iterator() : cur(nullptr), first(nullptr), last(nullptr), node(nullptr) {}
+  __deque_iterator(pointer _first, pointer _last, pointer _cur, map_pointer _node) :
+      cur(_cur), first(_first), last(_last), node(_node) {}
   reference operator*() const { return *cur; }
   pointer operator->() const { return &(operator*()); }
   difference_type operator-(const self_type &x) const {
@@ -97,12 +96,12 @@ struct __deque_iterator {
   }
 
   self_type operator+(difference_type n) const {
-    self_type tmp = *this;
+    auto tmp = *this;
     return tmp += n;
   }
   self_type &operator-=(difference_type n) { return *this += -n; }
   self_type operator-(difference_type n) const {
-    self_type tmp = *this;
+    auto tmp = *this;
     return tmp -= n;
   }
 
@@ -124,6 +123,7 @@ class deque {
   typedef value_type *pointer;
   typedef size_t size_type;
   typedef __deque_iterator<T, T &, T *> iterator;
+  typedef __deque_iterator<T, const T &, const T *> const_iterator;
   typedef value_type &reference;
   typedef const value_type &const_reference;
 
@@ -139,18 +139,20 @@ class deque {
   size_type map_size;
 
  public:
-  /*************** 构造、复制、赋值、析构相关 ************/
-  deque() {
+  /*************** 生命周期：constructor、copy constructor、copy assignment、destructor ************/
+  deque() : map_size(0) {
     create_map_and_nodes(1);
     start.cur = start.first;
     finish.cur = finish.first;
   }
-  explicit deque(int n, const value_type &val = value_type()) { allocate_and_fill_n(n, val); }
+  explicit deque(int n) { allocate_and_fill_n(n, value_type()); }
+  deque(int n, const value_type &val) { allocate_and_fill_n(n, val); }
   template<typename InputIterator>
   deque(InputIterator first, InputIterator last) { allocate_and_copy(first, last); }
   deque(const deque &x) { allocate_and_copy(x.begin(), x.end()); }
   ~deque() { destroy_and_deallocate_all(); }
 
+  // TODO：可能需要改
   deque &operator=(const deque &x) {
     if (this != &x) {
       destroy_and_deallocate_all();
@@ -158,7 +160,8 @@ class deque {
     }
     return *this;
   }
-  /*************** 比较相关 ************/
+
+  /*************** public const 成员变量函数 ************/
   bool operator==(const deque &x) const {
     auto b1 = begin(), b2 = x.begin();
     auto e1 = end(), e2 = x.end();
@@ -170,24 +173,21 @@ class deque {
   }
   bool operator!=(const deque &x) const { return !operator==(x); }
 
-  /*************** 迭代器相关 ************/
-  iterator begin() { return start; }
-  iterator end() { return finish; }
-  // TODO： 还是没有解决 const_iterator 的问题
-  iterator begin() const { return start; }
-  iterator end() const { return finish; }
-
-  /*************** 容量相关 ************/
   size_type size() const { return end() - begin(); }
   bool empty() const { return begin() == end(); }
 
-  /*************** 访问元素相关 ************/
-  reference operator[](size_type n) { return *(begin() + n); }
-  reference front() { return *begin(); }
-  reference back() { return *(end() - 1); }
+  const_iterator begin() const { return to_const_iterator(start); }
+  const_iterator end() const { return to_const_iterator(finish); }
   const_reference operator[](size_type n) const { return *(begin() + n); }
   const_reference front() const { return *begin(); }
   const_reference back() const { return *(end() - 1); }
+
+  /*************** public 成员变量函数 ************/
+  iterator begin() { return start; }
+  iterator end() { return finish; }
+  reference operator[](size_type n) { return *(begin() + n); }
+  reference front() { return *begin(); }
+  reference back() { return *(end() - 1); }
 
   /*************** 插入删除操作相关 ************/
   void push_back(const value_type &val) {
@@ -262,7 +262,7 @@ class deque {
   // 本函数仅做初始化用途
   void create_map_and_nodes(size_type num_elements) {
     size_type num_nodes = num_elements / buffer_size() + 1;
-    map_size = max(MiniMapSize, int(num_nodes + 2));
+    map_size = max(8, int(num_nodes + 2));
     // 初始化 map
     map = map_allocator::allocate(map_size);
     map_pointer new_start = map + (map_size - num_nodes) / 2;
@@ -305,7 +305,7 @@ class deque {
     finish.cur = finish.first;
   }
   void push_front_aux(const value_type &val) {
-    reserve_amp_at_front();
+    reserve_map_at_front();
     *(start.node - 1) = new_node();
     start.set_node(start.node - 1);
     start.cur = start.last - 1;
@@ -316,7 +316,7 @@ class deque {
     if (nodes_to_add > map_size - (finish.node - map) - 1)
       reallocate_map(nodes_to_add, false);
   }
-  void reserve_amp_at_front(size_type nodes_to_add = 1) {
+  void reserve_map_at_front(size_type nodes_to_add = 1) {
     if (nodes_to_add > start.node - map)
       reallocate_map(nodes_to_add, true);
   }
@@ -345,6 +345,7 @@ class deque {
     start.node = new_start;
     finish.node = new_start + old_num_nodes - 1;
   }
+  const_iterator to_const_iterator(iterator it) const { return const_iterator(it.first, it.last, it.cur, it.node); }
 };
 
 }

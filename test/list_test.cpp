@@ -1,7 +1,8 @@
-#include <gtest/gtest.h>
+#include <random>
 #include <list>
 #include <string>
-#include <random>
+
+#include <gtest/gtest.h>
 
 #include "../src/list.h"
 #include "test_utils.h"

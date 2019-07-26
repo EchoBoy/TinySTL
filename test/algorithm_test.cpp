@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
 #include <algorithm>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "../src/algorithm.h"
 #include "test_utils.h"
