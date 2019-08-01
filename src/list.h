@@ -11,7 +11,7 @@ namespace TinySTL {
 template<typename T>
 struct __list_node {
   // 成员变量私有，通过定义 friend class 来访问
-  template<typename>
+  template<typename, typename, typename>
   friend
   class __list_iterator;
   template<typename, typename>
@@ -25,15 +25,18 @@ struct __list_node {
 
  public:
   __list_node(const T &d, __list_node *p, __list_node *n) : data(d), prev(p), next(n) {}
-  bool operator==(const __list_node &n) {
-    return data = n.data && prev == n.prev && next == n.next;
+  friend bool operator==(const __list_node &lhs, const __list_node &rhs) {
+    return lhs.data = rhs.data && lhs.prev == rhs.prev && lhs.next == rhs.next;
   }
 };
 
-template<typename T>
+template<typename T, typename Ref, typename Ptr>
 struct __list_iterator : public iterator<bidirectional_iterator_tag, T> {
-  typedef __list_iterator<T> self_type;
-  typedef __list_node<T> *node_ptr;
+  using value_type = T;
+  using reference = Ref;
+  using pointer = Ptr;
+  using self_type = __list_iterator<T, Ref, Ptr>;
+  using node_ptr = __list_node<T> *;
 
   template<typename T1, typename Alloc>
   friend
@@ -47,10 +50,10 @@ struct __list_iterator : public iterator<bidirectional_iterator_tag, T> {
   explicit __list_iterator(node_ptr p) : ptr(p) {}
   __list_iterator(const self_type &val) : ptr(val.ptr) {}
 
-  bool operator==(const self_type &val) { return ptr == val.ptr; }
-  bool operator!=(const self_type &val) { return ptr != val.ptr; }
-  T &operator*() { return ptr->data; }
-  T *operator->() { return &(operator*()); }
+  friend bool operator==(const self_type &lhs, const self_type &rhs) { return lhs.ptr == rhs.ptr; }
+  friend bool operator!=(const self_type &lhs, const self_type &rhs) { return lhs.ptr != rhs.ptr; }
+  reference operator*() { return ptr->data; }
+  pointer operator->() { return &(operator*()); }
   self_type &operator++() {
     ptr = ptr->next;
     return *this;
@@ -59,12 +62,12 @@ struct __list_iterator : public iterator<bidirectional_iterator_tag, T> {
     ptr = ptr->prev;
     return *this;
   }
-  const self_type operator++(int) {
+  self_type operator++(int) {
     self_type tmp = *this;
     ++(*this);
     return tmp;
   }
-  const self_type operator--(int) {
+  self_type operator--(int) {
     self_type tmp = *this;
     --(*this);
     return tmp;
@@ -73,24 +76,26 @@ struct __list_iterator : public iterator<bidirectional_iterator_tag, T> {
 template<typename T, typename Alloc=allocator<__list_node<T>>>
 class list {
  protected:
-  typedef __list_node<T> node;
-  typedef __list_node<const T> const_node;
-  typedef node *node_ptr;
-  typedef const_node *const_node_ptr;
+  using node = __list_node<T>;
+  using const_node = __list_node<const T>;
+  using node_ptr = node *;
+  using const_node_ptr =  const_node *;
 
  public:
-  typedef T value_type;
-  typedef __list_iterator<T> iterator;
-  typedef __list_iterator<const T> const_iterator;
-  typedef T &reference;
-  typedef size_t size_type;
+  using value_type = T;
+  using iterator = __list_iterator<T, T &, T *>;
+  using const_iterator = __list_iterator<T, const T &, const T *>;
+  using reference = T &;
+  using const_reference  = const T &;
+  using size_type = size_t;
 
  protected:
-  typedef Alloc data_allocator;
+  using data_allocator = Alloc;
+  // 使用循环双向链表
   node_ptr dumpy_head;
 
  public:
-  /*************** 构造、复制、赋值、析构相关 ************/
+  /**** 生命周期：ctor、copy ctor、copy assignment、move ctor、move assignment、dtor ****/
   list() { init_dumpy_head(); };
   explicit list(size_type n, const value_type &val = value_type()) {
     typedef typename __type_traits<size_type>::is_integer is_integer;
@@ -101,28 +106,31 @@ class list {
     typedef typename __type_traits<InputIterator>::is_integer is_integer;
     ctor_aux(first, last, is_integer());
   }
-  list(const list &l) { ctor_aux(l.begin(), l.end(), __false_type()); }
-  list &operator=(const list &l) {
-    if (this != &l) {
-      list<T>(l).swap(*this);
-    }
+  // Rule of five
+  list(const list &l) : list(l.begin(), l.end()) {}
+  list(list &&x) : list() { swap(*this, x); }
+  list &operator=(list l) {
+    swap(*this, l);
     return *this;
   }
   ~list() {
-    for (auto p = dumpy_head->next; p != dumpy_head; p = p->next)
+    auto p = dumpy_head->next;
+    auto next_p = p->next;
+    for (; p != dumpy_head; p = next_p) {
+      next_p = p->next;
       delete_node(p);
+    }
     delete_node(dumpy_head);
   }
-  /*************** 迭代器相关 ************/
-  // TODO：这里是一个错误的做法。不应该将一下两函数标记为const
-  iterator begin() const { return __list_iterator<T>(dumpy_head->next); }
-  iterator end() const { return __list_iterator<T>(dumpy_head); }
-//  const_iterator begin() const { return node_ptr_to_const_it(dumpy_head->next); }
-//  const_iterator end() const { return node_ptr_to_const_it(dumpy_head); }
-
-  /*************** 容量相关 ************/
-  bool empty() const { return dumpy_head->next == dumpy_head; }
+  /*************** public const member functions ************/
+  const_iterator begin() const { return const_iterator(dumpy_head->next); }
+  const_iterator end() const { return const_iterator(dumpy_head); }
   size_type size() const { return static_cast<size_type>(TinySTL::distance(begin(), end())); }
+  bool empty() const { return dumpy_head->next == dumpy_head; }
+
+  /*************** public member functions ************/
+  iterator begin() { return iterator(dumpy_head->next); }
+  iterator end() { return iterator(dumpy_head); }
 
   /*************** 访问元素相关 ************/
   reference front() { return dumpy_head->next->data; }
@@ -144,14 +152,9 @@ class list {
   void push_back(const value_type &val) { __insert(dumpy_head, val); }
   void pop_back() { __erase(dumpy_head->prev); }
 
-  iterator erase(iterator position) { return __list_iterator<T>(__erase(position.ptr)); }
-  iterator erase(iterator first, iterator last) { return __list_iterator<T>(__erase(first.ptr, last.ptr)); }
+  iterator erase(iterator position) { return iterator(__erase(position.ptr)); }
+  iterator erase(iterator first, iterator last) { return iterator(__erase(first.ptr, last.ptr)); }
 
-  void swap(list &val) {
-    if (this != &val) {
-      TinySTL::swap(dumpy_head, val.dumpy_head);
-    }
-  }
   void clear() { erase(begin(), end()); }
 
   void remove(const value_type &val) {
@@ -231,19 +234,23 @@ class list {
       int i = 0;
       while (i < fill && !counter[i].empty()) {
         counter[i].merge(carry, comp);
-        carry.swap(counter[i++]);
+        swap(carry, counter[i++]);
       }
-      carry.swap(counter[i]);
+      swap(carry, counter[i]);
       if (i == fill)
         ++fill;
     }
     for (int i = 1; i < fill; ++i)
       counter[i].merge(counter[i - 1], comp);
-    swap(counter[fill - 1]);
+    swap(*this, counter[fill - 1]);
   }
   void sort() { sort(TinySTL::less<T>()); }
-
-
+ public:
+  /*************** 我的朋友 ************/
+  friend void swap(list &x, list &y) {
+    using TinySTL::swap;
+    swap(x.dumpy_head, y.dumpy_head);
+  }
 
   /*************** 辅助函数 ************/
  protected:
@@ -272,11 +279,6 @@ class list {
     for (; first != last; ++first)
       insert(position, *first);
   }
-  // TODO: 取tmp的地址，tmp是一个stack-based的变量，应该不能取地址返回才对
-//  const_iterator node_ptr_to_const_it(node_ptr p) const {
-//    const_node tmp(p->data, (const_node_ptr) p->prev, (const_node_ptr) p->next);
-//    return const_iterator(&tmp);
-//  }
 
  protected:
   node_ptr new_node(const T &val = T(), node_ptr pre = nullptr, node_ptr next = nullptr) {

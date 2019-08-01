@@ -7,27 +7,37 @@ namespace TinySTL {
 
 template<typename T, typename Sequence = TinySTL::deque<T>>
 class queue {
-  friend bool operator==(const queue &x, const queue &y) { return x.c == y.c; }
-  friend bool operator<(const queue &x, const queue &y) { return x.c < y.c; }
-  friend bool operator!=(const queue &lhs, const queue &rhs) { return !(lhs == rhs); }
-  friend void swap(queue &x, queue &y) { x.swap(y); }
  public:
-  typedef typename Sequence::value_type value_type;
-  typedef typename Sequence::size_type size_type;
-  typedef typename Sequence::reference reference;
-  typedef typename Sequence::const_reference const_reference;
+  friend bool operator==(const queue &lhs, const queue &rhs) { return lhs.c == rhs.c; }
+  friend bool operator<(const queue &lhs, const queue &rhs) { return lhs.c < rhs.c; }
+  friend bool operator!=(const queue &lhs, const queue &rhs) { return !(lhs == rhs); }
+  friend void swap(queue &x, queue &y) { swap(x.c, y.c); }
+
+ public:
+  using value_type = typename Sequence::value_type;
+  using size_type = typename Sequence::size_type;
+  using reference = typename Sequence::reference;
+  using const_reference = typename Sequence::const_reference;
+
  protected:
   Sequence c;
+
  public:
   queue() : c() {}
   explicit queue(const Sequence &seq) : c(seq) {}
+  queue(const queue &val) : c(val.c) {}
+  queue(queue &&val) : queue() { swap(*this, val); }
+  queue &operator=(queue val) {
+    swap(*this, val);
+    return *this;
+  }
+
   bool empty() const { return c.empty(); }
   size_type size() const { return c.size(); }
   reference front() { return c.front(); }
-  const value_type &front() const { return c.front(); }
+  const_reference front() const { return c.front(); }
   void push(const value_type &val) { c.push_back(val); }
   void pop() { c.pop_front(); }
-  void swap(queue &x) { c.swap(x.c); }
 
 };
 }

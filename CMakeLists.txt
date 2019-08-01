@@ -48,10 +48,3 @@ add_executable(TinySTLTest ${DIR_TEST_SRCS} ${DIR_SRC_SRCS})
 
 target_link_libraries(TinySTLTest gtest_main)
 
-
-
-
-
-# 自定义编译 生成实验(一些C++知识的整理）
-aux_source_directory(./experiment DIR_EXP_SRCS)
-add_executable(exp ${DIR_EXP_SRCS})

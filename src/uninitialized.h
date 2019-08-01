@@ -18,7 +18,7 @@ template<typename InputIterator, typename ForwardIterator>
 inline ForwardIterator
 __uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, __true_type) {
   // 出口一：copy : memmove || assignment operator
-  return copy(first, last, result);
+  return TinySTL::copy(first, last, result);
 }
 template<typename InputIterator, typename ForwardIterator>
 inline ForwardIterator

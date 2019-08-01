@@ -1,5 +1,6 @@
 #include <deque>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -94,7 +95,7 @@ TEST(DequeTest, Swap) {
   tsDQ<int> foo(arr, arr + 3), bar(arr + 3, arr + 10);
 
   EXPECT_TRUE(foo.size() == 3 && bar.size() == 7);
-  foo.swap(bar);
+  swap(foo, bar);
   EXPECT_TRUE(foo.size() == 7 && bar.size() == 3);
   TinySTL::swap(foo, bar);
   EXPECT_TRUE(foo.size() == 3 && bar.size() == 7);
@@ -130,6 +131,20 @@ TEST(DequeTest, Const) {
   const tsDQ<int> dp2(10, 12);
   EXPECT_TRUE(*(dp1.begin()) == *(dp2.begin()));
   EXPECT_TRUE(dp1[0] == dp2[0]);
+}
+
+tsDQ<int> getDeque(int n) {
+  std::vector<int> test_case(n);
+  for (int i = 0; i < n; ++i)
+    test_case[i] = i;
+  return tsDQ<int>(test_case.begin(), test_case.end());
+}
+
+TEST(DequeTest, Move) {
+  auto test_case(getDeque(100));
+  EXPECT_TRUE(test_case.size() == 100);
+  test_case = getDeque(1000);
+  EXPECT_TRUE(test_case.size() == 1000);
 }
 
 }

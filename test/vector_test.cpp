@@ -120,7 +120,7 @@ TEST(VectorTest, Swap) {
   EXPECT_TRUE(TinySTL::Test::container_equal(foo, stdVec<int>{100, 100, 100}));
   EXPECT_TRUE(TinySTL::Test::container_equal(bar, stdVec<int>{200, 200}));
 
-  foo.swap(bar);
+  swap(foo, bar);
   EXPECT_TRUE(TinySTL::Test::container_equal(bar, stdVec<int>{100, 100, 100}));
   EXPECT_TRUE(TinySTL::Test::container_equal(foo, stdVec<int>{200, 200}));
 }

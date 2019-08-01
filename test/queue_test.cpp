@@ -62,7 +62,7 @@ TEST(QueueTest, Swap) {
   q2.push(2);
 
   EXPECT_TRUE(q1.size() == 3 && q2.size() == 2);
-  q1.swap(q2);
+  swap(q1, q2);
   EXPECT_TRUE(q1.size() == 2 && q2.size() == 3);
   TinySTL::swap(q1, q2);
   EXPECT_TRUE(q1.size() == 3 && q2.size() == 2);

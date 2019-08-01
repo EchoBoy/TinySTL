@@ -9,10 +9,10 @@ namespace TinySTL {
 template<typename T, typename Sequence = vector<T>, typename Compare = less<typename Sequence::value_type>>
 class priority_queue {
  public:
-  typedef typename Sequence::value_type value_type;
-  typedef typename Sequence::size_type size_type;
-  typedef typename Sequence::reference reference;
-  typedef typename Sequence::const_reference const_reference;
+  using value_type = typename Sequence::value_type;
+  using size_type = typename Sequence::size_type;
+  using reference = typename Sequence::reference;
+  using const_reference = typename Sequence::const_reference;
 
  protected:
   Sequence c;
@@ -30,9 +30,13 @@ class priority_queue {
   priority_queue(InputIterator first, InputIterator last): c(first, last), comp() {
     TinySTL::make_heap(c.begin(), c.end(), comp);
   }
-  // copy constructor, copy assignment, destructor 都为编译器缺省
+  priority_queue(const priority_queue &val) : priority_queue(val.c.begin(), val.c.end(), val.comp) {}
+  priority_queue(priority_queue &&val) : priority_queue() { swap(*this, val); }
+  priority_queue &operator=(priority_queue val) {
+    swap(*this, val);
+    return *this;
+  }
 
-  /// 不会修改容器的成员函数（const get)
   bool empty() const { return c.empty(); }
   size_type size() const { return c.size(); }
   const_reference top() const { return c.front(); }
@@ -46,8 +50,8 @@ class priority_queue {
     TinySTL::pop_heap(c.begin(), c.end(), comp);
     c.pop_back();
   }
-  template<typename ST, typename SContainer, typename SCompare>
-  friend void seap(priority_queue<ST, SContainer, SCompare> &x, priority_queue<ST, SContainer, SCompare> &y) {
+ public:
+  friend void swap(priority_queue &x, priority_queue &y) {
     TinySTL::swap(x.c, y.c);
     TinySTL::swap(x.comp, y.comp);
   }

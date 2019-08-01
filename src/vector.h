@@ -7,72 +7,60 @@
 
 namespace TinySTL {
 
-template<typename T, typename Alloc=allocator<T>>
+template<typename T, typename Alloc = allocator<T>>
 class vector {
  public:
-  typedef T value_type;
-  typedef value_type *pointer;
-  typedef value_type *iterator;
-  typedef const value_type *const_iterator;
-  typedef value_type &reference;
-  typedef const value_type &const_reference;
-  typedef size_t size_type;
-  typedef ptrdiff_t difference_type;
+  using value_type = T;
+  using pointer = T *;
+  using const_pointer = const T *;
+  using reference = T &;
+  using const_reference = const T &;
+  using iterator = T *;
+  using const_iterator = const T *;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
 
  protected:
-  typedef Alloc data_allocator;
+  using data_allocator = Alloc;
   iterator start;
   iterator finish;
   iterator end_of_storage;
 
  public:
-  /*************** 构造、复制、赋值、析构相关 ************/
+  /**** 生命周期：ctor、copy ctor、copy assignment、move ctor、move assignment、dtor ****/
   vector() : start(nullptr), finish(nullptr), end_of_storage(nullptr) {}
   template<typename InputIterator>
   vector(InputIterator first, InputIterator last) {
     init(first, last, typename __type_traits<InputIterator>::is_integer());
   }
   vector(size_type n, const value_type &value) { allocate_and_fill_n(n, value); }
-  // TODO: std 的做法是调用 type_value 的构造函数n次，我这里是构造一个tmp，再调用 n 次拷贝构造
+  // TODO: STL 的做法是调用 type_value 的构造函数n次，我这里是构造一个tmp，再调用 n 次拷贝构造
+  // Rule of five
   explicit vector(size_type n) { allocate_and_fill_n(n, value_type()); }
-
-  vector(const vector &v) { allocate_and_copy(v.begin(), v.end()); }
-  vector &operator=(const vector &v) {
-    if (this != &v) {
-      destroy_and_deallocate_all();
-      allocate_and_copy(v.begin(), v.end());
-    }
+  vector(const vector &v) : vector(v.begin(), v.end()) {}
+  vector(vector &&v) : vector() { swap(*this, v); }
+  vector &operator=(vector v) {
+    swap(*this, v);
     return *this;
   }
-
   ~vector() { destroy_and_deallocate_all(); }
 
-  /*************** 比较相关 ************/
-  bool operator==(const vector &v) const {
-    if (size() != v.size())
-      return false;
-    auto it1 = begin(), last1 = end();
-    auto it2 = v.begin(), last2 = v.end();
-    for (; it1 != last1 && it2 != last2; ++it1, ++it2) {
-      if (*it1 != *it2)
-        return false;
-    }
-    return true;
-  }
-  bool operator!=(const vector &v) const { return !(*this == v); }
-
-  /*************** 迭代器相关 ************/
-  iterator begin() { return start; }
+ public:
+  /*************** public const  ************/
   const_iterator begin() const { return start; }
   const_iterator cbegin() const { return start; }
-  iterator end() { return finish; }
   const_iterator end() const { return finish; }
   const_iterator cend() const { return finish; }
-
-  /*************** 容量相关 ************/
   size_type size() const { return size_type(finish - start); }
   size_type capacity() const { return size_type(end_of_storage - start); }
   bool empty() const { return begin() == end(); }
+  const_reference operator[](const size_type i) const { return *(cbegin() + i); }
+  const_reference front() const { return *(begin()); }
+
+  /*************** public 成员函数  ************/
+  iterator begin() { return start; }
+  iterator end() { return finish; }
+
   void resize(size_type new_size, const value_type &x) {
     if (new_size < size()) {
       erase(begin() + new_size, end());
@@ -80,7 +68,7 @@ class vector {
       insert(end(), new_size - size(), x);
     }
   }
-  void resize(size_type new_size) { resize(new_size, T()); }
+  void resize(size_type new_size) { resize(new_size, value_type()); }
   void reserve(size_type n) {
     if (n <= capacity()) return;
     iterator new_start = data_allocator::allocate(n);
@@ -93,9 +81,7 @@ class vector {
 
   /*************** 访问元素相关 ************/
   reference operator[](const size_type i) { return *(begin() + i); }
-  const_reference operator[](const size_type i) const { return *(cbegin() + i); }
   reference front() { return *(begin()); }
-  const_reference front() const { return *(begin()); }
   reference back() { return *(end() - 1); }
   pointer data() { return start; }
 
@@ -110,16 +96,10 @@ class vector {
     typedef typename __type_traits<InputIterator>::is_integer is_integer;
     insert_aux(position, first, last, is_integer());
   }
+  // 只析构元素，不释放空间
   void clear() {
     data_allocator::destroy(start, finish);
     finish = start;
-  }
-  void swap(vector &v) {
-    if (this != &v) {
-      TinySTL::swap(start, v.start);
-      TinySTL::swap(finish, v.finish);
-      TinySTL::swap(end_of_storage, v.end_of_storage);
-    }
   }
   void push_back(const value_type &val) {
     if (finish != end_of_storage) {
@@ -145,6 +125,26 @@ class vector {
     return first;
   }
   iterator erase(iterator position) { return erase(position, position + 1); }
+ public:
+  /*************** 我的朋友 ************/
+  friend void swap(vector &x, vector &y) {
+    using TinySTL::swap;
+    swap(x.start, y.start);
+    swap(x.finish, y.finish);
+    swap(x.end_of_storage, y.end_of_storage);
+  }
+  friend bool operator==(const vector &lhs, const vector &rhs) {
+    if (lhs.size() != rhs.size())
+      return false;
+    auto it1 = lhs.begin(), last1 = lhs.end();
+    auto it2 = rhs.begin(), last2 = rhs.end();
+    for (; it1 != last1 && it2 != last2; ++it1, ++it2) {
+      if (*it1 != *it2)
+        return false;
+    }
+    return true;
+  }
+  friend bool operator!=(const vector &lhs, const vector &rhs) { return !(lhs == rhs); }
 
 
   /*************** 辅助函数 ************/
@@ -156,6 +156,8 @@ class vector {
       data_allocator::deallocate(start, capacity());
     }
   }
+
+  // TODO: 这里应该使用move
   void reallocate_and_fill_n(iterator fill_position, size_type n, const value_type &val) {
     size_type new_cap = get_new_capacity(n);
 

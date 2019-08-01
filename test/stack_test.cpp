@@ -54,7 +54,7 @@ TEST(StackTest, Push) {
   st2.push(1);
   st2.push(2);
   EXPECT_TRUE(st1.size() == 3 && st2.size() == 2);
-  st1.swap(st2);
+  swap(st1, st2);
   EXPECT_TRUE(st1.size() == 2 && st2.size() == 3);
   // TODO：这里应该调用stack内部定义的friend swap，而不是algorithm中的swap。
   TinySTL::swap(st1, st2);
