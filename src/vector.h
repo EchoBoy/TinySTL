@@ -51,8 +51,8 @@ class vector {
   const_iterator cbegin() const { return start; }
   const_iterator end() const { return finish; }
   const_iterator cend() const { return finish; }
-  size_type size() const { return size_type(finish - start); }
-  size_type capacity() const { return size_type(end_of_storage - start); }
+  size_type size() const { return static_cast<size_type>(finish - start); }
+  size_type capacity() const { return static_cast<size_type>(end_of_storage - start); }
   bool empty() const { return begin() == end(); }
   const_reference operator[](const size_type i) const { return *(cbegin() + i); }
   const_reference front() const { return *(begin()); }
